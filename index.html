@@ -6,12 +6,14 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <meta name="theme-color" content="#f7f7f5">
+  <meta name="theme-color" content="#d7eaff">
   <title>Love Train</title>
   <style>
-    :root { color-scheme: light; --bg:#f7f7f5; --card:rgba(255,255,255,.24); --ink:#20211f; --muted:#4f554d; --line:rgba(255,255,255,.40); --accent:#343a32; --play-ink:#ffffff; --lyrics-glass:rgba(255,255,255,.58); --lyrics-control-glass:rgba(255,255,255,.76); --lyrics-ink:#20211f; --lyrics-muted:#4b514a; --lyrics-border:rgba(255,255,255,.68); --lyrics-active-bg:rgba(20,25,20,.10); }
+    :root { color-scheme: light; --bg:linear-gradient(135deg,#e9f4ff 0%,#d7eaff 52%,#bfdaf2 100%); --card:rgba(255,255,255,.24); --ink:#20211f; --muted:#4f554d; --line:rgba(255,255,255,.40); --accent:#343a32; --play-ink:#ffffff; --lyrics-glass:rgba(255,255,255,.58); --lyrics-control-glass:rgba(255,255,255,.76); --lyrics-ink:#20211f; --lyrics-muted:#4b514a; --lyrics-border:rgba(255,255,255,.68); --lyrics-active-bg:rgba(20,25,20,.10); }
     * { box-sizing:border-box }
     body { margin:0; min-height:100vh; background:var(--bg); background-attachment:fixed; color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; display:grid; place-items:center; padding:24px; transition:background .6s ease; }
+    body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; mix-blend-mode:multiply; background-image:repeating-radial-gradient(circle at 27% 38%,rgba(89,75,56,.26) 0 .6px,transparent .9px 3.4px),repeating-linear-gradient(117deg,rgba(255,255,255,.4) 0 1px,rgba(80,70,55,.09) 1px 3px); -webkit-mask-image:radial-gradient(ellipse 31% 26% at 17% 23%,#000 24%,transparent 100%),radial-gradient(ellipse 27% 23% at 83% 58%,#000 25%,transparent 100%),radial-gradient(ellipse 34% 24% at 43% 96%,#000 25%,transparent 100%); mask-image:radial-gradient(ellipse 31% 26% at 17% 23%,#000 24%,transparent 100%),radial-gradient(ellipse 27% 23% at 83% 58%,#000 25%,transparent 100%),radial-gradient(ellipse 34% 24% at 43% 96%,#000 25%,transparent 100%); transition:opacity .6s ease; }
+    body.watercolor-paper::before { opacity:.38; }
     #nightSky { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; visibility:hidden; opacity:0; transition:opacity .7s ease; }
     body.gold-night-sky #nightSky { visibility:visible; opacity:1; }
     .star-field { position:absolute; inset:0; overflow:hidden; }
@@ -83,6 +85,10 @@
     #uiWaterCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:3; pointer-events:none; opacity:0; transition:opacity .6s ease; }
     #uiWaterCanvas.active { opacity:1; }
     #heartCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:4; pointer-events:none; }
+    #watercolorCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:0; pointer-events:none; opacity:0; transition:opacity .8s ease; }
+    #watercolorCanvas.active { opacity:1; }
+    #cloudShadowCanvas { position:fixed; inset:0; width:100%; height:100%; z-index:11; pointer-events:none; opacity:0; transition:opacity .8s ease; }
+    #cloudShadowCanvas.active { opacity:1; }
     body.hovering-ambient { cursor:grab; }
     body.dragging-shape,body.dragging-shape * { cursor:grabbing !important; }
     @keyframes softLightning {
@@ -142,6 +148,7 @@
     .vinyl-disc { position:absolute; z-index:2; top:27%; left:7%; width:40%; aspect-ratio:1; overflow:visible; padding:0; border:0; border-radius:50%; background:transparent; cursor:grab; touch-action:none; transition:left .65s cubic-bezier(.22,1,.36,1),top .65s cubic-bezier(.22,1,.36,1),transform .65s cubic-bezier(.22,1,.36,1),filter .2s ease; }
     .vinyl-disc.removed { z-index:5; transform:scale(1.08); filter:drop-shadow(0 18px 18px rgba(0,0,0,.45)); }
     .vinyl-disc.dragging { cursor:grabbing; transition:none; transform:none; }
+    .vinyl-disc.sliding-off { transform:translate(-28%,14%) rotate(-24deg) scale(.86); }
     .vinyl-disc.inserting { pointer-events:none; }
     .vinyl-disc.removed:not(.dragging) .vinyl-rotor { animation-play-state:paused; }
     .art.has-record-on-turntable .vinyl-disc { z-index:5; top:27%; left:55%; width:42%; }
@@ -165,11 +172,12 @@
     .vinyl-label { position:absolute; top:50%; left:50%; width:39%; aspect-ratio:1; border:3px solid rgba(255,255,255,.68); border-radius:50%; object-fit:cover; box-shadow:0 2px 12px rgba(0,0,0,.38); transform:translate(-50%,-50%); }
     .art.is-playing .vinyl-label { z-index:1; width:50%; }
     .eject-hint { position:absolute; z-index:6; left:50%; bottom:10px; padding:5px 10px; border-radius:999px; background:rgba(15,17,20,.72); color:#fff; font-size:11px; opacity:0; pointer-events:none; transform:translateX(-50%); transition:opacity .2s ease; white-space:nowrap; }
-    .art.has-ejected-disc .eject-hint { opacity:1; }
+    .art.has-ejected-disc:not(.has-record-on-turntable) .eject-hint { opacity:1; }
     @keyframes vinylSpin { to { transform:rotate(360deg) } }
     @keyframes vinylEjectSpin { to { transform:rotate(360deg) } }
     .disc { font-size:52px; opacity:.7; }
     .trackline { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .trackline[hidden] { display:none; }
     .trackline strong { display:block; color:var(--ink); font-size:18px; font-weight:800; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; text-shadow:0 1px 8px rgba(255,255,255,.28); }
     .trackline span { color:var(--ink); font-size:13px; font-weight:700; opacity:.82; }
     .spectrum { display:block; width:100%; height:34px; margin-top:12px; border-radius:4px; }
@@ -395,6 +403,8 @@
 <canvas id="rainCanvas" aria-hidden="true"></canvas>
 <canvas id="uiWaterCanvas" aria-hidden="true"></canvas>
 <canvas id="heartCanvas" aria-hidden="true"></canvas>
+<canvas id="watercolorCanvas" aria-hidden="true"></canvas>
+<canvas id="cloudShadowCanvas" aria-hidden="true"></canvas>
 <div id="lightningFlash" aria-hidden="true"></div>
 <button class="share-button" id="shareButton" type="button">Share / QR</button>
 <main>
@@ -753,7 +763,8 @@
       ],
       translatedLyricsFile: null},
     { title: "Em dạo này", artist: "ngọt", src: "songs/mysong3.mp3", cover: "cover/cover3.jpg", backgroundGradient: ["#ffe7f0", "#f09abc"] },
-    { title: "So Long", artist: "Yonkagor", src: "songs/mysong4.mp3", cover: "cover/cover4.jpg", skyEffect: "gold-night" }
+    { title: "So Long", artist: "Yonkagor", src: "songs/mysong4.mp3", cover: "cover/cover4.jpg", skyEffect: "gold-night" },
+    { title: "Silly plan", artist: "Yonkagor", src: "songs/mysong5.mp3", cover: "cover/cover5.jpg", backgroundGradient: ["#d7eaff", "#b4d2ef"], ambientEffect: "watercolor", watercolorPalette: ["#e77da8", "#a9c77d", "#39a7e8"] }
   ];
   const playlistOrderStorageKey = "qr-music-player-playlist-order";
   function restorePlaylistOrder() {
@@ -808,6 +819,7 @@
   let lastSpectrumFrame = 0;
   const title = document.getElementById("title");
   const artist = document.getElementById("artist");
+  const trackline = document.querySelector(".trackline");
   const art = document.getElementById("art");
   const toggle = document.getElementById("toggle");
   const autoNextButton = document.getElementById("autoNext");
@@ -921,6 +933,10 @@
 
   const heartCanvas = document.getElementById("heartCanvas");
   const heartContext = heartCanvas.getContext("2d");
+  const watercolorCanvas = document.getElementById("watercolorCanvas");
+  const watercolorContext = watercolorCanvas.getContext("2d");
+  const cloudShadowCanvas = document.getElementById("cloudShadowCanvas");
+  const cloudShadowContext = cloudShadowCanvas.getContext("2d");
   let ambientShapes = [];
   let heartPalette = [];
   let heartEnabled = false;
@@ -929,6 +945,12 @@
   let leafPalette = [];
   let leafLastSpawn = 0;
   let draggedShape = null;
+  let watercolorEnabled = false;
+  let watercolorPalette = [];
+  let watercolorShapes = [];
+  let watercolorLastSplash = 0;
+  let watercolorLastCloud = 0;
+  const watercolorMotionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   function resizeHeartCanvas() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -937,6 +959,166 @@
     heartCanvas.style.width = window.innerWidth + "px";
     heartCanvas.style.height = window.innerHeight + "px";
     heartContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+
+  function resizeWatercolorCanvas() {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    watercolorCanvas.width = window.innerWidth * ratio;
+    watercolorCanvas.height = window.innerHeight * ratio;
+    watercolorCanvas.style.width = window.innerWidth + "px";
+    watercolorCanvas.style.height = window.innerHeight + "px";
+    watercolorContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    cloudShadowCanvas.width = window.innerWidth * ratio;
+    cloudShadowCanvas.height = window.innerHeight * ratio;
+    cloudShadowCanvas.style.width = window.innerWidth + "px";
+    cloudShadowCanvas.style.height = window.innerHeight + "px";
+    cloudShadowContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    watercolorShapes.forEach(shape => {
+      if (shape.type !== "cloud-shadow") return;
+      shape.x = window.innerWidth * 0.5;
+      shape.y = window.innerHeight * 0.5;
+      shape.radiusX = window.innerWidth * 0.9;
+      shape.radiusY = window.innerHeight * 0.86;
+    });
+  }
+
+  function spawnWatercolorSplash() {
+    if (!watercolorPalette.length) return;
+    const size = 34 + Math.random() * 48;
+    watercolorShapes.push({
+      type: "splash",
+      x: window.innerWidth * (0.08 + Math.random() * 0.84),
+      y: window.innerHeight * (0.12 + Math.random() * 0.76),
+      size,
+      age: 0,
+      duration: 300 + Math.random() * 180,
+      life: 1,
+      drift: (Math.random() - 0.5) * 0.12,
+      rise: (Math.random() - 0.5) * 0.08,
+      rotation: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.0015,
+      color: watercolorPalette[Math.floor(Math.random() * watercolorPalette.length)],
+      lobes: Array.from({ length: 16 }, () => 0.62 + Math.random() * 0.62),
+      droplets: Array.from({ length: 9 }, () => ({
+        angle: Math.random() * Math.PI * 2,
+        distance: 0.8 + Math.random() * 1.25,
+        size: 0.025 + Math.random() * 0.055
+      }))
+    });
+  }
+
+  function spawnCloudShadow() {
+    if (!watercolorPalette.length) return;
+    const direction = Math.random() < 0.5 ? 1 : -1;
+    watercolorShapes.push({
+      type: "cloud-shadow",
+      x: window.innerWidth * 0.5,
+      y: window.innerHeight * 0.5,
+      radiusX: window.innerWidth * 0.9,
+      radiusY: window.innerHeight * 0.86,
+      age: 0,
+      speedX: direction * (0.18 + Math.random() * 0.12),
+      wave: Math.random() * Math.PI * 2,
+      opacity: 0.12 + Math.random() * 0.04
+    });
+  }
+
+  function drawWatercolorSplash(shape) {
+    const fade = Math.min(1, shape.life / 0.2);
+    const size = shape.size * (0.82 + Math.min(1, shape.age / 12) * 0.18);
+    watercolorContext.save();
+    watercolorContext.translate(shape.x, shape.y);
+    watercolorContext.rotate(shape.rotation);
+    watercolorContext.shadowColor = hexToRgba(shape.color, 0.3 * fade);
+    watercolorContext.shadowBlur = size * 0.22;
+    watercolorContext.beginPath();
+    shape.lobes.forEach((lobe, index) => {
+      const angle = index * Math.PI * 2 / shape.lobes.length;
+      const radius = size * lobe;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (index === 0) watercolorContext.moveTo(x, y);
+      else watercolorContext.lineTo(x, y);
+    });
+    watercolorContext.closePath();
+    watercolorContext.fillStyle = hexToRgba(shape.color, 0.27 * fade);
+    watercolorContext.fill();
+    watercolorContext.shadowBlur = 0;
+    shape.droplets.forEach(drop => {
+      const distance = size * drop.distance;
+      watercolorContext.beginPath();
+      watercolorContext.ellipse(
+        Math.cos(drop.angle) * distance,
+        Math.sin(drop.angle) * distance,
+        size * drop.size * 1.35,
+        size * drop.size * 0.72,
+        drop.angle,
+        0,
+        Math.PI * 2
+      );
+      watercolorContext.fillStyle = hexToRgba(shape.color, 0.23 * fade);
+      watercolorContext.fill();
+    });
+    watercolorContext.restore();
+  }
+
+  function drawCloudShadow(shape) {
+    cloudShadowContext.save();
+    cloudShadowContext.translate(
+      shape.x,
+      shape.y + Math.sin(shape.age * 0.012 + shape.wave) * window.innerHeight * 0.012
+    );
+    cloudShadowContext.rotate(Math.sin(shape.age * 0.004 + shape.wave) * 0.035);
+    cloudShadowContext.scale(shape.radiusX, shape.radiusY);
+    const gradient = cloudShadowContext.createRadialGradient(0, 0, 0, 0, 0, 1);
+    gradient.addColorStop(0, `rgba(83, 126, 162, ${shape.opacity})`);
+    gradient.addColorStop(0.48, `rgba(95, 137, 171, ${shape.opacity * 0.72})`);
+    gradient.addColorStop(0.84, `rgba(106, 146, 177, ${shape.opacity * 0.32})`);
+    gradient.addColorStop(1, "rgba(106, 146, 177, 0)");
+    cloudShadowContext.fillStyle = gradient;
+    cloudShadowContext.beginPath();
+    cloudShadowContext.arc(0, 0, 1, 0, Math.PI * 2);
+    cloudShadowContext.fill();
+    cloudShadowContext.restore();
+  }
+
+  function drawWatercolorEffects(timestamp) {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    watercolorContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    cloudShadowContext.setTransform(ratio, 0, 0, ratio, 0, 0);
+    watercolorContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    cloudShadowContext.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    if (watercolorEnabled && watercolorMotionAllowed && watercolorPalette.length) {
+      const splashCount = watercolorShapes.filter(shape => shape.type === "splash").length;
+      if (splashCount < 5 && timestamp - watercolorLastSplash > 950 + Math.random() * 1100) {
+        spawnWatercolorSplash();
+        watercolorLastSplash = timestamp;
+      }
+      const cloudCount = watercolorShapes.filter(shape => shape.type === "cloud-shadow").length;
+      if (cloudCount < 1 && timestamp - watercolorLastCloud > 8000 + Math.random() * 4000) {
+        spawnCloudShadow();
+        watercolorLastCloud = timestamp;
+      }
+    }
+    watercolorShapes = watercolorShapes.filter(shape => {
+      shape.age++;
+      if (shape.type === "splash") {
+        shape.life = Math.max(0, 1 - shape.age / shape.duration);
+        shape.x += shape.drift;
+        shape.y += shape.rise;
+        shape.rotation += shape.spin;
+        if (shape.life <= 0) return false;
+        drawWatercolorSplash(shape);
+        return true;
+      }
+      shape.x += shape.speedX;
+      if (shape.x < window.innerWidth * 0.4 || shape.x > window.innerWidth * 0.6) {
+        shape.speedX *= -1;
+      }
+      drawCloudShadow(shape);
+      return true;
+    });
+    requestAnimationFrame(drawWatercolorEffects);
   }
 
   function hexToRgba(hex, alpha) {
@@ -1186,6 +1368,9 @@
   resizeHeartCanvas();
   window.addEventListener("resize", resizeHeartCanvas);
   drawAmbientEffects(performance.now());
+  resizeWatercolorCanvas();
+  window.addEventListener("resize", resizeWatercolorCanvas);
+  drawWatercolorEffects(performance.now());
 
   const shareButton = document.getElementById("shareButton");
   const shareDialog = document.getElementById("shareDialog");
@@ -1862,6 +2047,8 @@
   }
   function resetBackground() {
     document.body.classList.remove("cover-dots");
+    document.body.classList.remove("watercolor-paper");
+    trackline.hidden = true;
     ambientShapes = [];
     draggedShape = null;
     document.body.classList.remove("dragging-shape");
@@ -1874,13 +2061,18 @@
     heartEnabled = false;
     ambientMode = null;
     leafPalette = [];
+    watercolorEnabled = false;
+    watercolorPalette = [];
+    watercolorShapes = [];
+    watercolorCanvas.classList.remove("active");
+    cloudShadowCanvas.classList.remove("active");
     tracksEl.style.removeProperty("--list-gradient");
     tracksEl.style.removeProperty("--list-ink");
     tracksEl.style.backgroundImage = "linear-gradient(135deg, rgba(255,255,255,.12), rgba(255,255,255,.06))";
-    document.body.style.backgroundColor = "#f7f7f5";
-    document.body.style.backgroundImage = "none";
+    document.body.style.backgroundColor = "#d7eaff";
+    document.body.style.backgroundImage = "linear-gradient(135deg,#e9f4ff 0%,#d7eaff 52%,#bfdaf2 100%)";
     document.body.style.backgroundAttachment = "fixed";
-    document.querySelector('meta[name="theme-color"]').setAttribute("content", "#f7f7f5");
+    document.querySelector('meta[name="theme-color"]').setAttribute("content", "#d7eaff");
     document.documentElement.style.setProperty("--ink", "#20211f");
     document.documentElement.style.setProperty("--muted", "#777a74");
     document.documentElement.style.setProperty("--accent", "#343a32");
@@ -1980,7 +2172,6 @@
       context.drawImage(image, 0, 0, size, size);
 
       try {
-        if (preserveExplicitGradient) return;
         const pixels = context.getImageData(0, 0, size, size).data;
         const buckets = new Map();
 
@@ -2002,6 +2193,46 @@
 
         if (!buckets.size) return;
         const colors = [...buckets.values()].sort((a, b) => b.count - a.count);
+        if (watercolorEnabled) {
+          const pinkColors = [];
+          const greenColors = [];
+          const blueColors = [];
+          colors.forEach(bucket => {
+            const r = bucket.r / bucket.count;
+            const g = bucket.g / bucket.count;
+            const b = bucket.b / bucket.count;
+            const maximum = Math.max(r, g, b);
+            const minimum = Math.min(r, g, b);
+            const chroma = maximum - minimum;
+            const luminance = (r * 299 + g * 587 + b * 114) / 1000;
+            if (chroma < 34 || maximum === 0 || luminance < 48 || luminance > 246) return;
+            const saturation = chroma / maximum;
+            let hue;
+            if (maximum === r) hue = 60 * (((g - b) / chroma) % 6);
+            else if (maximum === g) hue = 60 * ((b - r) / chroma + 2);
+            else hue = 60 * ((r - g) / chroma + 4);
+            hue = (hue + 360) % 360;
+            if (saturation < 0.22) return;
+            if (hue >= 300 || hue <= 18) pinkColors.push(bucket);
+            else if (hue >= 65 && hue <= 165) greenColors.push(bucket);
+            else if (hue >= 185 && hue <= 260) blueColors.push(bucket);
+          });
+          const toPalette = palette => palette.slice(0, 2).map(bucket => rgbToHex(
+              bucket.r / bucket.count,
+              bucket.g / bucket.count,
+              bucket.b / bucket.count
+            ));
+          const sampledPink = toPalette(pinkColors);
+          const sampledGreen = toPalette(greenColors);
+          const sampledBlue = toPalette(blueColors);
+          const fallbackPalette = playlist[current]?.watercolorPalette || ["#e77da8", "#a9c77d", "#39a7e8"];
+          watercolorPalette = [
+            ...(sampledPink.length ? sampledPink : [fallbackPalette[0]]),
+            ...(sampledGreen.length ? sampledGreen : [fallbackPalette[1]]),
+            ...(sampledBlue.length ? sampledBlue : [fallbackPalette[2]])
+          ];
+        }
+        if (preserveExplicitGradient) return;
         const dominant = colors[0];
         const secondary = colors[1] || dominant;
         const primaryRgb = {
@@ -2029,12 +2260,25 @@
     setRain(false);
   }
   function applySongTheme(song) {
+    trackline.hidden = false;
+    title.textContent = song.title || "Choose a song";
+    artist.textContent = song.artist || "Unknown artist";
     document.body.classList.toggle("gold-night-sky", song.skyEffect === "gold-night");
     document.body.classList.toggle("cover-dots", Boolean(song.dots));
     ambientShapes = [];
     draggedShape = null;
     document.body.classList.remove("dragging-shape", "hovering-ambient");
     ambientMode = song.ambientEffect || null;
+    watercolorEnabled = ambientMode === "watercolor";
+    document.body.classList.toggle("watercolor-paper", watercolorEnabled);
+    watercolorPalette = song.watercolorPalette || [];
+    watercolorShapes = [];
+    watercolorCanvas.classList.toggle("active", watercolorEnabled);
+    cloudShadowCanvas.classList.toggle("active", watercolorEnabled);
+    if (watercolorEnabled) {
+      watercolorLastSplash = performance.now() - 1500;
+      watercolorLastCloud = performance.now() - 12000;
+    }
     heartEnabled = ambientMode === "hearts";
     heartPalette = song.heartPalette || (
       heartEnabled
@@ -2075,8 +2319,9 @@
     tonearm.innerHTML = '<g class="tonearm-swing"><path class="tonearm-shaft" d="M87 12 L98 35"/><path class="tonearm-highlight" d="M87 12 L98 35"/><path class="tonearm-head" d="M95 33 L100 35 L98 39 L94 36 Z"/><path class="tonearm-needle" d="M98 38 L97 42"/></g><circle class="tonearm-base" cx="87" cy="12" r="5"/>';
     const ejectHint = document.createElement("span");
     ejectHint.className = "eject-hint";
-    ejectHint.textContent = "Drag the record onto the turntable to play, or back onto its sleeve to return";
+    ejectHint.textContent = "Drop a record here to play; the current record slides aside.";
     art.append(deck, platter, tonearm, ejectHint);
+    updateVinylStageState();
   }
   function buildVinylDisc(song) {
     const vinyl = document.createElement("button");
@@ -2100,24 +2345,33 @@
     }
     return null;
   }
+  function updateVinylStageState() {
+    const hasTurntableRecord = Array.from(art.children).some(child => child.classList.contains("vinyl-disc"));
+    const hasEjectedRecord = Boolean(floatingTracksEl.querySelector(".vinyl-disc.removed"));
+    art.classList.toggle("has-record-on-turntable", hasTurntableRecord);
+    art.classList.toggle("has-ejected-disc", hasEjectedRecord);
+  }
   function setVinylInserted(vinyl, state=getFloatingPlaylistCoverState(vinyl)) {
     if (!vinyl || !state) return;
+    const wasOnTurntable = vinyl.parentElement === art;
     state.cover.appendChild(vinyl);
-    vinyl.classList.remove("inserting", "removed", "dragging", "ejecting");
+    vinyl.classList.remove("inserting", "removed", "dragging", "ejecting", "sliding-off");
     ["position", "left", "top", "right", "width", "height"].forEach(property => vinyl.style.removeProperty(property));
     vinyl.setAttribute("aria-pressed", "false");
     vinyl.setAttribute("aria-label", "Record in sleeve; click the cover to eject it");
-    art.classList.remove("has-ejected-disc", "has-record-on-turntable");
-    audio.pause();
     state.cover.classList.remove("record-out");
-    setNeutralTheme();
+    updateVinylStageState();
+    if (wasOnTurntable) {
+      audio.pause();
+      setNeutralTheme();
+    }
   }
   function setVinylOnTurntable(vinyl, state=getFloatingPlaylistCoverState(vinyl)) {
     if (!vinyl) return;
     const stageRect = art.getBoundingClientRect();
     const discRect = vinyl.getBoundingClientRect();
     art.appendChild(vinyl);
-    vinyl.classList.remove("removed", "dragging", "inserting", "ejecting");
+    vinyl.classList.remove("removed", "dragging", "inserting", "ejecting", "sliding-off");
     ["position", "width", "height"].forEach(property => vinyl.style.removeProperty(property));
     art.classList.remove("has-ejected-disc");
     art.classList.add("has-record-on-turntable");
@@ -2126,6 +2380,7 @@
     vinyl.style.right = "auto";
     vinyl.setAttribute("aria-pressed", "false");
     vinyl.setAttribute("aria-label", "Record on turntable; use the play control to play");
+    updateVinylStageState();
     void vinyl.offsetWidth;
     requestAnimationFrame(() => {
       vinyl.style.removeProperty("left");
@@ -2134,6 +2389,37 @@
     });
     const song = state ? state.song : playlist[current];
     if (song) applySongTheme(song);
+  }
+  function slideVinylOffTurntable(vinyl) {
+    if (!vinyl || vinyl.parentElement !== art) return;
+    const stageRect = art.getBoundingClientRect();
+    const discRect = vinyl.getBoundingClientRect();
+    const previousDiscs = floatingTracksEl.querySelectorAll(".vinyl-disc.sliding-off").length;
+    const offset = previousDiscs * 22;
+    const targetLeft = clamp(stageRect.left + stageRect.width * .035 + offset, 0, window.innerWidth - discRect.width);
+    const targetTop = clamp(stageRect.top + stageRect.height * .3 + offset * .65, 0, window.innerHeight - discRect.height);
+    const state = getFloatingPlaylistCoverState(vinyl);
+    floatingTracksEl.appendChild(vinyl);
+    vinyl.classList.remove("dragging", "inserting", "ejecting");
+    vinyl.classList.add("removed");
+    vinyl.style.position = "fixed";
+    vinyl.style.width = discRect.width + "px";
+    vinyl.style.height = discRect.height + "px";
+    vinyl.style.left = discRect.left + "px";
+    vinyl.style.top = discRect.top + "px";
+    vinyl.style.right = "auto";
+    vinyl.setAttribute("aria-pressed", "true");
+    vinyl.setAttribute("aria-label", "Record slid off the turntable; drag it onto the turntable or back onto its cover");
+    if (state) state.cover.classList.add("record-out");
+    art.classList.remove("has-record-on-turntable");
+    art.classList.add("has-ejected-disc");
+    vinyl.classList.add("sliding-off");
+    updateVinylStageState();
+    void vinyl.offsetWidth;
+    requestAnimationFrame(() => {
+      vinyl.style.left = targetLeft + "px";
+      vinyl.style.top = targetTop + "px";
+    });
   }
   function setVinylRemoved(vinyl, state=getFloatingPlaylistCoverState(vinyl)) {
     if (!vinyl || !state) return;
@@ -2157,16 +2443,13 @@
     vinyl.classList.add("removed", "ejecting");
     vinyl.setAttribute("aria-pressed", "true");
     vinyl.setAttribute("aria-label", "Record removed; drag it to the turntable or back onto its cover");
-    art.classList.add("has-ejected-disc");
-    art.classList.remove("has-record-on-turntable");
     state.cover.classList.add("record-out");
     requestAnimationFrame(() => {
       vinyl.style.left = targetLeft + "px";
       vinyl.style.top = targetTop + "px";
     });
-    audio.pause();
-    prepareAudioPlayback();
-    setNeutralTheme();
+    updateVinylStageState();
+    if (!art.classList.contains("has-record-on-turntable")) setNeutralTheme();
   }
   function makeVinylDraggable(vinyl, state) {
     let drag = null;
@@ -2193,6 +2476,7 @@
       if (!drag.moved && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 6) return;
       if (!drag.moved) {
         drag.moved = true;
+        vinyl.classList.remove("sliding-off");
         if (drag.onTurntable) {
           floatingTracksEl.appendChild(vinyl);
           vinyl.setPointerCapture(event.pointerId);
@@ -2236,6 +2520,8 @@
         if (overSleeve && (!overTurntable || Math.hypot(centerX - (sleeveRect.left + sleeveRect.width / 2), centerY - (sleeveRect.top + sleeveRect.height / 2)) < Math.hypot(centerX - (deckRect.left + deckRect.width / 2), centerY - (deckRect.top + deckRect.height / 2)))) {
           setVinylInserted(vinyl, state);
         } else if (overTurntable) {
+          const turntableVinyl = Array.from(art.children).find(child => child.classList.contains("vinyl-disc"));
+          if (turntableVinyl && turntableVinyl !== vinyl) slideVinylOffTurntable(turntableVinyl);
           const index = state ? playlist.indexOf(state.song) : current;
           if (index >= 0 && index !== current) load(index);
           setVinylOnTurntable(vinyl, state);
@@ -3129,8 +3415,6 @@
       x: clamp(rect.left + rect.width * .28, 0, Math.max(0, window.innerWidth - rect.width)),
       y: clamp(rect.top - rect.height * .2, 0, Math.max(0, window.innerHeight - rect.height))
     };
-    const index = playlist.indexOf(song);
-    if (index >= 0) load(index);
     createFloatingPlaylistCard(drag, point);
     renderList();
   }
@@ -3190,8 +3474,6 @@
         return;
       }
       if (performance.now() < suppressPlaylistClickUntil) return;
-      const index = playlist.indexOf(song);
-      if (index >= 0) load(index);
       animateFloatingPlaylistCard(card);
     });
     card.addEventListener("click", () => {
@@ -3281,7 +3563,6 @@
   function ejectPlaylistCover(song, sourceSlot=null) {
     const index = playlist.indexOf(song);
     if (index < 0) return;
-    load(index);
     const liveSlot = sourceSlot && floatingTracksEl.contains(sourceSlot)
       ? sourceSlot
       : tracksEl.querySelector('.track-cover-slot[data-index="' + index + '"]');

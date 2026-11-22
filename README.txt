@@ -14,8 +14,9 @@ QR MUSIC PLAYER — STARTER PROJECT
    configured there as artists/Yonkagor.webp. If no artist image is found, the song
    cover is used instead.
    Scroll below the player to browse playlist cards with each song's cover, title,
-   and artist. Selecting a card loads the track without starting playback. To add a
-   song manually, copy a playlist entry and update its title, artist, audio path, and
+   and artist. Selecting a card loads the track without starting playback. Popping a
+   card or its cover out leaves the current song playing. To add a song manually, copy
+   a playlist entry and update its title, artist, audio path, and
    cover path. Put the audio in songs/ and its cover in cover/. For a new artist,
    place their portrait in artists/ and add its path to artistCovers.
    Click a song's details to select it. Drag a song card outside the playlist to move it
@@ -24,9 +25,10 @@ QR MUSIC PLAYER — STARTER PROJECT
    Drag cards onto one another to reorder the playlist. Double-click a playlist card
    to pop out the whole card; double-click its cover to pop out the sleeve. The sleeve
    moves independently, and double-clicking a floating card body repeats its pop
-   animation. Click the sleeve to eject the record, then drag the record onto
-   the turntable to play or back onto its sleeve to return it. The player has no separate
-   sleeve beside the turntable. The page uses a neutral theme until a record is on the
+   animation. Click a sleeve to eject its record. Several records can be out at once;
+   dropping one on the turntable slides the playing record aside instead of returning it
+   to its sleeve. Drag an ejected record onto its sleeve to put it away. The player has no
+   separate sleeve beside the turntable. The page uses a neutral theme until a record is on the
    turntable, then switches to that song's theme; removing the record restores the neutral
    theme. Drag song cards onto one another to reorder the playlist. The reordered list is
    saved in this browser. The record stays on the platter when paused. A tonearm swings
@@ -37,6 +39,10 @@ QR MUSIC PLAYER — STARTER PROJECT
    or any floating shape on the heart-themed track to move them around. The third
    track uses a milky white and rosy pink palette. After the final song ends, use the
    Autoplay playlist button to start again from the first song.
+   The neutral player uses a blue gradient and hides the song and artist labels. "Silly plan"
+   keeps a blue gradient, adds watercolor-paper texture only while it is active, and uses
+   cover-sampled blue, pink, and green splashes with one sparse, oversized, pale
+   cloud-shadow overlay above the page content.
    The fourth song, "So Long," has larger flickering, star-shaped gold stars, a burst
    of three fast star-shaped shooting stars following one path with long fading trails,
    and a smaller, raised gold train with seven straight, joined blue cars, warm-lit
