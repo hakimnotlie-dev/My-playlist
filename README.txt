@@ -78,11 +78,9 @@ QR MUSIC PLAYER — STARTER PROJECT
    Other songs can use `lyrics` and `translatedLyrics` arrays. The saved files are
    plain text. Add LRC timestamps such as `[00:12.50] Your lyric line` to sync
    lines accurately; every line needs a timestamp for consistent highlighting.
-3. Opening `index.html` directly uses `songs/embedded-audio.js` for playlist tracks
-   so playback works without a local server. To play a manually added song this way,
-   add its audio data to that file as a base64 entry. Alternatively, run
-   `py -m http.server 8000` from this folder and open http://localhost:8000 to play
-   audio files directly from songs/.
+3. Run `py -m http.server 8000` from this folder and open http://localhost:8000 to
+   play the MP3 files from songs/. Keep the audio files in songs/ instead of
+   embedding them into JavaScript.
 4. To share the player with GitHub Pages:
    - Create a GitHub repository and add the contents of this folder to its root
      (index.html, songs/, cover/, artists/, and lyrics/).
