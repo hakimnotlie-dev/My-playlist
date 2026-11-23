@@ -3790,7 +3790,45 @@
     autoplayButton.hidden = true;
     current = (i + playlist.length) % playlist.length;
     const song = playlist[current];
-    audio.src = song.src;
+    if (location.protocol === "file:") {
+      window.qrMusicEmbeddedAudio = window.qrMusicEmbeddedAudio || {};
+      const embeddedAudio = window.qrMusicEmbeddedAudio[song.src];
+      if (embeddedAudio) {
+        audio.src = embeddedAudio;
+      } else {
+        audio.removeAttribute("src");
+        const trackNumber = /mysong([0-9]+)\.mp3$/i.exec(song.src);
+        if (trackNumber) {
+          const scriptId = "embedded-audio-" + trackNumber[1];
+          const existingScript = document.getElementById(scriptId);
+          if (!existingScript) {
+            const script = document.createElement("script");
+            script.id = scriptId;
+            script.src = "songs/embedded-audio-" + trackNumber[1] + ".js";
+            script.onload = () => {
+              if (song === playlist[current]) {
+                const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
+                if (loadedAudio) audio.src = loadedAudio;
+              }
+            };
+            document.head.appendChild(script);
+          } else if (existingScript.dataset.loaded === "true") {
+            const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
+            if (loadedAudio) audio.src = loadedAudio;
+          } else {
+            existingScript.onload = () => {
+              if (song === playlist[current]) {
+                const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
+                if (loadedAudio) audio.src = loadedAudio;
+              }
+              existingScript.dataset.loaded = "true";
+            };
+          }
+        }
+      }
+    } else {
+      audio.src = song.src;
+    }
     seek.value = 0;
     updateSeekProgress();
     title.textContent = song.title;
