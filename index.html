@@ -759,7 +759,8 @@
       translatedLyricsFile: null},
     { title: "Em dạo này", artist: "ngọt", src: "songs/mysong3.mp3", cover: "cover/cover3.jpg", backgroundGradient: ["#ffe7f0", "#f09abc"] },
     { title: "So Long", artist: "Yonkagor", src: "songs/mysong4.mp3", cover: "cover/cover4.jpg", skyEffect: "gold-night" },
-    { title: "Silly plan", artist: "Yonkagor", src: "songs/mysong5.mp3", cover: "cover/cover5.jpg", backgroundGradient: ["#eaf7ff", "#b9ddff"], ambientEffect: "watercolor", watercolorPalette: ["#e77da8", "#a9c77d", "#39a7e8"] }
+    { title: "Silly plan", artist: "Yonkagor", src: "songs/mysong5.mp3", cover: "cover/cover5.jpg", backgroundGradient: ["#eaf7ff", "#b9ddff"], ambientEffect: "watercolor", watercolorPalette: ["#e77da8", "#a9c77d", "#39a7e8"] },
+    { title: "Trước khi em tồn tại", artist: "ngọt", src: "songs/mysong6.mp3", cover: "cover/cover6.jpg", coverAsPageBackground: true }
   ];
   const playlistOrderStorageKey = "qr-music-player-playlist-order";
   function restorePlaylistOrder() {
@@ -920,6 +921,8 @@
   document.getElementById("nightSky").prepend(starField);
   const playerUi = document.querySelector("main");
   let current = 0;
+  let audioPlayRequest = 0;
+  const audioSourceLoads = new Map();
   let autoNextEnabled = false;
   let selectedArtist = "";
   let playlistDrag = null;
@@ -2067,6 +2070,9 @@
     document.body.style.backgroundColor = "#d7eaff";
     document.body.style.backgroundImage = "linear-gradient(135deg,#e9f4ff 0%,#d7eaff 52%,#bfdaf2 100%)";
     document.body.style.backgroundAttachment = "fixed";
+    document.body.style.backgroundPosition = "";
+    document.body.style.backgroundRepeat = "";
+    document.body.style.backgroundSize = "";
     document.querySelector('meta[name="theme-color"]').setAttribute("content", "#d7eaff");
     document.documentElement.style.setProperty("--ink", "#20211f");
     document.documentElement.style.setProperty("--muted", "#777a74");
@@ -2227,6 +2233,15 @@
             ...(sampledBlue.length ? sampledBlue : [fallbackPalette[2]])
           ];
         }
+        if (playlist[current]?.coverAsPageBackground) {
+          const dominant = colors[0];
+          document.body.style.backgroundColor = rgbToHex(
+            dominant.r / dominant.count,
+            dominant.g / dominant.count,
+            dominant.b / dominant.count
+          );
+          return;
+        }
         if (preserveExplicitGradient) return;
         const dominant = colors[0];
         const secondary = colors[1] || dominant;
@@ -2289,7 +2304,14 @@
     } else {
       setThemeColor(song.backgroundColor);
     }
-    setBackgroundFromCover(song.cover, Boolean(song.backgroundGradient));
+    setBackgroundFromCover(song.cover, Boolean(song.backgroundGradient || song.coverAsPageBackground));
+    if (song.coverAsPageBackground && song.cover) {
+      document.body.style.backgroundImage = `url(${JSON.stringify(song.cover)})`;
+      document.body.style.backgroundPosition = "calc(50% + 20px) center";
+      document.body.style.backgroundRepeat = "no-repeat";
+      document.body.style.backgroundSize = "90% auto";
+      document.body.style.backgroundAttachment = "fixed";
+    }
   }
   function showArtwork() {
     floatingPlaylistCovers.forEach(state => {
@@ -2328,7 +2350,7 @@
     rotor.className = "vinyl-rotor";
     const label = document.createElement("img");
     label.className = "vinyl-label";
-    if (song.cover) label.src = song.cover;
+    if (song.cover) label.src = resolveArtworkPath(song.cover);
     label.alt = "";
     rotor.appendChild(label);
     vinyl.appendChild(rotor);
@@ -2596,7 +2618,12 @@
         }
       } catch (_) {}
     };
-    image.src = song.cover;
+    image.src = resolveArtworkPath(song.cover);
+  }
+  function resolveArtworkPath(path) {
+    if (!path) return path;
+    try { return new URL(path, document.baseURI).href; }
+    catch (_) { return path; }
   }
   function getArtistName(song) {
     return song.artist || "Unknown artist";
@@ -2629,13 +2656,58 @@
       console.error("Could not initialize the audio spectrum.", error);
     }
   }
+  // Tracks imported with the Add Song panel are stored in IndexedDB. Their
+  // object URLs are rebuilt each time the page opens.
+  window.qrAddedMedia = window.qrAddedMedia || Object.create(null);
+  function getAudioSource(song) {
+    if (song && window.qrAddedMedia[song.src]) return Promise.resolve(window.qrAddedMedia[song.src]);
+    // Keep the original local-file strategy: each embedded script provides
+    // a complete data:audio/mpeg URL. Hosted pages use the MP3 file path.
+    if (location.protocol !== "file:") return Promise.resolve(song.src);
+    window.qrMusicEmbeddedAudio = window.qrMusicEmbeddedAudio || {};
+    const embeddedAudio = window.qrMusicEmbeddedAudio[song.src];
+    if (embeddedAudio) return Promise.resolve(embeddedAudio);
+    if (audioSourceLoads.has(song.src)) return audioSourceLoads.get(song.src);
+    const trackNumber = /mysong([0-9]+)\.mp3$/i.exec(song.src);
+    if (!trackNumber) {
+      return Promise.reject(new Error(`No embedded audio script is configured for ${song.src}.`));
+    }
+    const script = document.createElement("script");
+    script.src = "songs/embedded-audio-" + trackNumber[1] + ".js";
+    const loading = new Promise((resolve, reject) => {
+      script.onload = () => {
+        const source = window.qrMusicEmbeddedAudio[song.src];
+        if (source && source.startsWith("data:audio/")) resolve(source);
+        else reject(new Error(`The embedded audio script did not provide valid audio for ${song.src}.`));
+      };
+      script.onerror = () => reject(new Error(`Could not load ${script.src}.`));
+      document.head.appendChild(script);
+    }).catch(error => {
+      audioSourceLoads.delete(song.src);
+      throw error;
+    });
+    audioSourceLoads.set(song.src, loading);
+    return loading;
+  }
   function playAudio() {
     prepareAudioPlayback();
-    audio.play().catch(error => {
-      if (error.name !== "AbortError") showPlaybackError(error);
+    const song = playlist[current];
+    if (!song) return;
+    const request = ++audioPlayRequest;
+    getAudioSource(song).then(source => {
+      if (request !== audioPlayRequest || song !== playlist[current]) return;
+      if (audio.getAttribute("src") !== source) audio.src = source;
+      const result = audio.play();
+      if (result && typeof result.catch === "function") {
+        result.catch(error => {
+          if (error.name !== "AbortError" && song === playlist[current]) showPlaybackError(error);
+        });
+      }
+    }).catch(error => {
+      if (error.name !== "AbortError" && song === playlist[current]) showPlaybackError(error);
     });
   }
-  function autoplayCurrentTrack() {
+function autoplayCurrentTrack() {
     const song = playlist[current];
     if (!song) return;
     let state = floatingPlaylistCovers.get(song);
@@ -3195,11 +3267,11 @@
         const image = document.createElement("img");
         let usingSongCover = false;
         image.alt = "";
-        image.src = song.artistCover || getArtistCoverPath(name);
+        image.src = resolveArtworkPath(song.artistCover || getArtistCoverPath(name));
         image.addEventListener("error", () => {
           if (!usingSongCover && song.cover) {
             usingSongCover = true;
-            image.src = song.cover;
+            image.src = resolveArtworkPath(song.cover);
           } else {
             image.remove();
             imageWrap.textContent = name.charAt(0).toUpperCase();
@@ -3256,7 +3328,7 @@
       } else if (song.cover) {
         const image = document.createElement("img");
         image.className = "track-cover-slot-image";
-        image.src = song.cover;
+        image.src = resolveArtworkPath(song.cover);
         image.alt = "";
         image.draggable = false;
         coverSlot.appendChild(image);
@@ -3383,7 +3455,7 @@
     } else if (song.cover) {
       const image = document.createElement("img");
       image.className = "track-cover-slot-image";
-      image.src = song.cover;
+      image.src = resolveArtworkPath(song.cover);
       image.alt = "";
       image.draggable = false;
       image.addEventListener("error", () => {
@@ -3569,7 +3641,7 @@
     cover.setAttribute("aria-label", "Popped-out cover for " + song.title + ". Click the sleeve to eject its record.");
     const sleeve = document.createElement("img");
     sleeve.className = "floating-playlist-sleeve";
-    sleeve.src = song.cover;
+    sleeve.src = resolveArtworkPath(song.cover);
     sleeve.alt = song.title + " album cover";
     sleeve.draggable = false;
     sleeve.tabIndex = 0;
@@ -3788,47 +3860,23 @@
     playbackMessage.hidden = true;
     playbackMessage.textContent = "";
     autoplayButton.hidden = true;
+    audioPlayRequest++;
     current = (i + playlist.length) % playlist.length;
     const song = playlist[current];
     if (location.protocol === "file:") {
-      window.qrMusicEmbeddedAudio = window.qrMusicEmbeddedAudio || {};
-      const embeddedAudio = window.qrMusicEmbeddedAudio[song.src];
-      if (embeddedAudio) {
-        audio.src = embeddedAudio;
-      } else {
-        audio.removeAttribute("src");
-        const trackNumber = /mysong([0-9]+)\.mp3$/i.exec(song.src);
-        if (trackNumber) {
-          const scriptId = "embedded-audio-" + trackNumber[1];
-          const existingScript = document.getElementById(scriptId);
-          if (!existingScript) {
-            const script = document.createElement("script");
-            script.id = scriptId;
-            script.src = "songs/embedded-audio-" + trackNumber[1] + ".js";
-            script.onload = () => {
-              if (song === playlist[current]) {
-                const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
-                if (loadedAudio) audio.src = loadedAudio;
-              }
-            };
-            document.head.appendChild(script);
-          } else if (existingScript.dataset.loaded === "true") {
-            const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
-            if (loadedAudio) audio.src = loadedAudio;
-          } else {
-            existingScript.onload = () => {
-              if (song === playlist[current]) {
-                const loadedAudio = window.qrMusicEmbeddedAudio[song.src];
-                if (loadedAudio) audio.src = loadedAudio;
-              }
-              existingScript.dataset.loaded = "true";
-            };
-          }
-        }
-      }
+      audio.pause();
+      audio.removeAttribute("src");
+      audio.load();
     } else {
       audio.src = song.src;
     }
+    getAudioSource(song).then(source => {
+      if (song === playlist[current] && audio.getAttribute("src") !== source) {
+        audio.src = source;
+      }
+    }).catch(error => {
+      if (song === playlist[current]) showPlaybackError(error);
+    });
     seek.value = 0;
     updateSeekProgress();
     title.textContent = song.title;
@@ -3949,7 +3997,10 @@
       }
       playAudio();
     }
-    else audio.pause();
+    else {
+      audioPlayRequest++;
+      audio.pause();
+    }
   });
   lyricViews.forEach(view => {
     view.editButton.addEventListener("click", () => {
@@ -4075,6 +4126,270 @@
     updateSeekProgress();
     if (audio.duration) audio.currentTime = seek.value/100*audio.duration;
   });
+  // ---------------- Add Song / local library ----------------
+  // Imported tracks are saved in this browser's IndexedDB. This works both
+  // from an extracted file:// project and on GitHub Pages; browser security
+  // does not allow a web page to silently write into project folders.
+  const qrLibraryDBName = "qr-music-player-library-v1";
+  const qrLibraryStore = "tracks";
+  function qrOpenLibrary() {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(qrLibraryDBName, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(qrLibraryStore)) db.createObjectStore(qrLibraryStore, { keyPath: "id" });
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("Could not open the local music library."));
+    });
+  }
+  async function qrLibraryRequest(mode, action, value) {
+    const db = await qrOpenLibrary();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(qrLibraryStore, mode);
+      const store = tx.objectStore(qrLibraryStore);
+      const req = action === "getAll" ? store.getAll() : store[action](value);
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+      tx.oncomplete = () => db.close();
+      tx.onerror = () => { db.close(); reject(tx.error); };
+    });
+  }
+  function qrMakeId() { return "added-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8); }
+  function qrMakeField(labelText, type, placeholder) {
+    const label = document.createElement("label");
+    label.textContent = labelText;
+    label.style.cssText = "display:grid;gap:6px;font-size:13px;color:inherit;";
+    const input = document.createElement("input");
+    input.type = type;
+    if (placeholder) input.placeholder = placeholder;
+    input.style.cssText = "box-sizing:border-box;width:100%;padding:10px 12px;border:1px solid #aaa6;border-radius:10px;background:#fff;color:#222;font:inherit;";
+    label.appendChild(input);
+    return { label, input };
+  }
+  const qrAddButton = document.createElement("button");
+  qrAddButton.type = "button";
+  qrAddButton.textContent = "+ Add song";
+  qrAddButton.setAttribute("aria-label", "Add song to your music library");
+  qrAddButton.style.cssText = "position:fixed;z-index:10000;right:22px;top:18px;padding:11px 16px;border:0;border-radius:999px;background:#30364b;color:white;font:600 14px system-ui;box-shadow:0 5px 20px #0003;cursor:pointer;";
+  document.body.appendChild(qrAddButton);
+  const qrDialog = document.createElement("dialog");
+  qrDialog.style.cssText = "width:min(520px,calc(100% - 32px));max-height:85vh;overflow:auto;border:0;border-radius:18px;padding:22px;background:#f8f7f5;color:#24242a;box-shadow:0 20px 70px #0005;font:14px system-ui;";
+  qrDialog.innerHTML = '<form method="dialog" style="display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px"><strong style="font-size:20px">Add a song</strong><button value="cancel" aria-label="Close" style="border:0;background:transparent;font-size:24px;cursor:pointer">×</button></form><p style="margin:0 0 16px;color:#555">Choose an audio file, then add its artwork and artist details. Your additions are saved in this browser.</p>';
+  const qrForm = document.createElement("form");
+  qrForm.style.cssText = "display:grid;gap:13px;";
+  const qrTitle = qrMakeField("Song title", "text", "Song title");
+  const qrArtist = qrMakeField("Artist", "text", "Artist name");
+  const qrAudio = qrMakeField("Audio file (MP3 recommended)", "file"); qrAudio.input.accept = "audio/*"; qrAudio.input.required = true;
+  const qrCover = qrMakeField("Song cover", "file"); qrCover.input.accept = "image/*";
+  const qrArtistImage = qrMakeField("Artist picture (optional)", "file"); qrArtistImage.input.accept = "image/*";
+  const qrLyrics = qrMakeField("Original lyrics file (optional .txt or .lrc)", "file"); qrLyrics.input.accept = ".txt,.lrc,text/plain";
+  const qrTranslation = qrMakeField("Translated lyrics file (optional .txt or .lrc)", "file"); qrTranslation.input.accept = ".txt,.lrc,text/plain";
+  const qrDrop = document.createElement("div");
+  qrDrop.textContent = "Or drag an MP3 and image files here";
+  qrDrop.style.cssText = "padding:18px;border:2px dashed #aaa;border-radius:12px;text-align:center;color:#666;background:#fff8;";
+  const qrStatus = document.createElement("p"); qrStatus.setAttribute("role","status"); qrStatus.style.cssText = "margin:0;color:#555;min-height:18px;";
+  const qrSave = document.createElement("button"); qrSave.type = "submit"; qrSave.textContent = "Add to my library"; qrSave.style.cssText = "padding:12px;border:0;border-radius:10px;background:#30364b;color:white;font-weight:700;cursor:pointer;";
+  [qrTitle,qrArtist,qrAudio,qrCover,qrArtistImage,qrLyrics,qrTranslation].forEach(x=>qrForm.appendChild(x.label));
+  qrForm.append(qrDrop,qrStatus,qrSave); qrDialog.appendChild(qrForm); document.body.appendChild(qrDialog);
+  let qrDroppedAudio = null, qrDroppedCover = null, qrDroppedArtist = null;
+  function qrSetStatus(message, error=false) { qrStatus.textContent=message; qrStatus.style.color=error?"#a12b36":"#555"; }
+  qrAddButton.addEventListener("click",()=>{ qrForm.reset(); qrDroppedAudio=qrDroppedCover=qrDroppedArtist=null; qrSetStatus(""); qrDialog.showModal(); });
+  ["dragenter","dragover"].forEach(name=>qrDrop.addEventListener(name,e=>{e.preventDefault();qrDrop.style.background="#e8eaf2";}));
+  ["dragleave","drop"].forEach(name=>qrDrop.addEventListener(name,e=>{e.preventDefault();qrDrop.style.background="#fff8";}));
+  qrDrop.addEventListener("drop",e=>{ const files=[...e.dataTransfer.files]; for(const f of files){ if(f.type.startsWith("audio/")) qrDroppedAudio=f; else if(f.type.startsWith("image/")){ if(!qrDroppedCover) qrDroppedCover=f; else qrDroppedArtist=f; } } if(qrDroppedAudio) qrAudio.input.required=false; qrSetStatus(files.length+" file(s) added to the form. Fill in the title and artist."); });
+  qrAudio.input.addEventListener("change",()=>{qrDroppedAudio=qrAudio.input.files[0]||null;});
+  qrCover.input.addEventListener("change",()=>{qrDroppedCover=qrCover.input.files[0]||null;});
+  qrArtistImage.input.addEventListener("change",()=>{qrDroppedArtist=qrArtistImage.input.files[0]||null;});
+  qrForm.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const audioFile=qrAudio.input.files[0]||qrDroppedAudio;
+    const coverFile=qrCover.input.files[0]||qrDroppedCover;
+    const artistFile=qrArtistImage.input.files[0]||qrDroppedArtist;
+    if(!audioFile){qrSetStatus("Please choose or drop an audio file.",true);return;}
+    const titleValue=qrTitle.input.value.trim()||audioFile.name.replace(/\.[^.]+$/,"");
+    const artistValue=qrArtist.input.value.trim()||"Unknown artist";
+    qrSave.disabled=true; qrSetStatus("Saving your song…");
+    try{
+      const id=qrMakeId();
+      let lyricText="", translationText=""; const lyricFile=qrLyrics.input.files[0], translationFile=qrTranslation.input.files[0]; if(lyricFile) lyricText=await lyricFile.text(); if(translationFile) translationText=await translationFile.text();
+      const record={id,title:titleValue,artist:artistValue,audio:audioFile,cover:coverFile||null,artistImage:artistFile||null,lyricsText:lyricText,translationText,addedAt:Date.now()};
+      await qrLibraryRequest("readwrite","put",record);
+      const audioUrl=URL.createObjectURL(audioFile); window.qrAddedMedia["qr-added:"+id]=audioUrl;
+      const song={title:titleValue,artist:artistValue,src:"qr-added:"+id,cover:coverFile?URL.createObjectURL(coverFile):"",lyrics:lyricText?lyricText.split(/\r?\n/).filter(Boolean):[],translatedLyrics:translationText?translationText.split(/\r?\n/).filter(Boolean):[]};
+      if(artistFile){ const artistUrl=URL.createObjectURL(artistFile); artistCovers[artistValue]=artistUrl; song.artistCover=artistUrl; }
+      playlist.push(song); renderArtists(); renderList(); qrDialog.close();
+      qrStatus.textContent="";
+    }catch(error){console.error(error);qrSetStatus("Couldn't save this song. Your browser may be out of storage space or block local storage.",true);}
+    finally{qrSave.disabled=false;}
+  });
+  // Export browser-imported songs into the actual project folder so the
+  // music, artwork and lyrics travel with the project when it is shared.
+  const qrExportButton = document.createElement("button");
+  qrExportButton.type = "button";
+  qrExportButton.textContent = "Save to project";
+  qrExportButton.title = "Copy added songs into the project folders and update index.html";
+  qrExportButton.style.cssText = "position:fixed;z-index:10000;right:145px;top:18px;padding:11px 16px;border:0;border-radius:999px;background:#65745e;color:white;font:600 14px system-ui;box-shadow:0 5px 20px #0003;cursor:pointer;";
+  document.body.appendChild(qrExportButton);
+
+  function qrSafeJs(value) {
+    return JSON.stringify(value).replace(/</g, "\\u003c").replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
+  }
+  function qrFileExtension(file, fallback) {
+    const nameExt = file && file.name && /\.([a-z0-9]{2,5})$/i.exec(file.name);
+    if (nameExt) return nameExt[1].toLowerCase();
+    const type = file && file.type || "";
+    const byType = {"image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/avif":"avif"};
+    return byType[type] || fallback;
+  }
+  async function qrWriteFile(directory, name, data, type) {
+    const handle = await directory.getFileHandle(name, {create:true});
+    const writable = await handle.createWritable();
+    await writable.write(data instanceof Blob ? data : new Blob([data], {type:type || "application/octet-stream"}));
+    await writable.close();
+  }
+  function qrBytesToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    const chunkSize = 0x8000;
+    for (let i = 0; i < bytes.length; i += chunkSize) {
+      binary += String.fromCharCode(...bytes.subarray(i, Math.min(i + chunkSize, bytes.length)));
+    }
+    return btoa(binary);
+  }
+  function qrNextSongNumber(sourceText) {
+    let highest = 0;
+    for (const match of sourceText.matchAll(/songs\/mysong(\d+)\.mp3/gi)) highest = Math.max(highest, Number(match[1]));
+    return highest + 1;
+  }
+  function qrPlaylistInsertion(sourceText, entries) {
+    const start = sourceText.indexOf("const playlist = [");
+    if (start < 0) throw new Error("Couldn't find the original playlist in index.html.");
+    const endMarker = "  ];\n  const playlistOrderStorageKey";
+    const end = sourceText.indexOf(endMarker, start);
+    if (end < 0) throw new Error("Couldn't find the end of the playlist in index.html.");
+    const addition = entries.map(entry => "    " + qrSafeJs(entry)).join(",\n");
+    if (!addition) return sourceText;
+    const before = sourceText.slice(0, end).replace(/\s*$/, "");
+    const needsComma = before.trimEnd().endsWith("{") || before.trimEnd().endsWith(",") ? "\n" : ",\n";
+    return before + needsComma + addition + "\n" + sourceText.slice(end);
+  }
+  async function qrExportAddedSongs() {
+    if (typeof window.showDirectoryPicker !== "function") {
+      qrSetStatus("Folder export needs a Chromium browser with folder access. Try Chrome or Edge.", true);
+      qrDialog.showModal();
+      return;
+    }
+    qrExportButton.disabled = true;
+    qrExportButton.textContent = "Choose project folder…";
+    try {
+      const folder = await window.showDirectoryPicker({mode:"readwrite"});
+      const indexHandle = await folder.getFileHandle("index.html");
+      const indexFile = await indexHandle.getFile();
+      let indexText = await indexFile.text();
+      const records = (await qrLibraryRequest("readonly", "getAll")).filter(record => !record.exported);
+      if (!records.length) {
+        alert("There are no new songs waiting to be saved. Your added songs may already be in the project.");
+        return;
+      }
+      const songsDir = await folder.getDirectoryHandle("songs", {create:true});
+      const coverDir = await folder.getDirectoryHandle("cover", {create:true});
+      const artistsDir = await folder.getDirectoryHandle("artists", {create:true});
+      const lyricsDir = await folder.getDirectoryHandle("lyrics", {create:true});
+      const newEntries = [];
+      const artistMap = new Map();
+      let songNumber = qrNextSongNumber(indexText);
+      for (const record of records) {
+        if (!record.audio || !/^audio\/(mpeg|mp3)$/i.test(record.audio.type || "") && !/\.mp3$/i.test(record.audio.name || "")) {
+          throw new Error("\"" + record.title + "\" is not an MP3. Please add an MP3 file so local playback can be embedded.");
+        }
+        const number = songNumber++;
+        const audioName = "mysong" + number + ".mp3";
+        const audioPath = "songs/" + audioName;
+        await qrWriteFile(songsDir, audioName, record.audio, "audio/mpeg");
+        const base64 = qrBytesToBase64(await record.audio.arrayBuffer());
+        const embedded = "window.qrMusicEmbeddedAudio = window.qrMusicEmbeddedAudio || {};\n" +
+          "window.qrMusicEmbeddedAudio[" + qrSafeJs(audioPath) + "] = " + qrSafeJs("data:audio/mpeg;base64," + base64) + ";\n";
+        await qrWriteFile(songsDir, "embedded-audio-" + number + ".js", embedded, "text/javascript");
+
+        const entry = {title:record.title, artist:record.artist || "Unknown artist", src:audioPath};
+        if (record.cover) {
+          const ext = qrFileExtension(record.cover, "jpg");
+          const coverName = "cover" + number + "." + ext;
+          await qrWriteFile(coverDir, coverName, record.cover);
+          entry.cover = "cover/" + coverName;
+        }
+        if (record.artistImage) {
+          const artistName = record.artist || "Unknown artist";
+          if (!artistMap.has(artistName) && !Object.prototype.hasOwnProperty.call(artistCovers, artistName)) {
+            const slug = artistName.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") || "artist";
+            const ext = qrFileExtension(record.artistImage, "jpg");
+            const artistFileName = slug + "-added." + ext;
+            await qrWriteFile(artistsDir, artistFileName, record.artistImage);
+            artistMap.set(artistName, "artists/" + artistFileName);
+          }
+        }
+        if (record.lyricsText) {
+          const lyricsName = "added-" + number + "-original.txt";
+          await qrWriteFile(lyricsDir, lyricsName, record.lyricsText, "text/plain;charset=utf-8");
+          entry.lyricsFile = "lyrics/" + lyricsName;
+          entry.lyrics = record.lyricsText.split(/\r?\n/).filter(Boolean);
+        }
+        if (record.translationText) {
+          const translationName = "added-" + number + "-translation.txt";
+          await qrWriteFile(lyricsDir, translationName, record.translationText, "text/plain;charset=utf-8");
+          entry.translatedLyricsFile = "lyrics/" + translationName;
+          entry.translatedLyrics = record.translationText.split(/\r?\n/).filter(Boolean);
+        }
+        newEntries.push(entry);
+        record.exportedSource = audioPath;
+      }
+      indexText = qrPlaylistInsertion(indexText, newEntries);
+      const artistMapStart = indexText.indexOf("const artistCovers = {");
+      const artistMapEndMarker = "  };\n\n  const audio";
+      const artistMapEnd = indexText.indexOf(artistMapEndMarker, artistMapStart);
+      if (artistMapStart < 0 || artistMapEnd < 0) throw new Error("Couldn't find the artist artwork map in index.html.");
+      const artistLines = [...artistMap.entries()].map(([name, path]) => "    " + qrSafeJs(name) + ": " + qrSafeJs(path)).join(",\n");
+      if (artistLines) {
+        const before = indexText.slice(0, artistMapEnd).replace(/\s*$/, "");
+        const comma = before.trimEnd().endsWith("{") ? "\n" : ",\n";
+        indexText = before + comma + artistLines + "\n" + indexText.slice(artistMapEnd);
+      }
+      await qrWriteFile(folder, "index.html", indexText, "text/html;charset=utf-8");
+      for (const record of records) {
+        record.exported = true;
+        await qrLibraryRequest("readwrite", "put", record);
+      }
+      alert("Saved " + newEntries.length + " song(s) into the project! The songs, covers, artist pictures, lyrics and index.html are now together in the folder. Share this whole folder or upload it to GitHub.");
+      qrExportButton.textContent = "Project saved ✓";
+    } catch (error) {
+      if (error && error.name === "AbortError") return;
+      console.error("Could not export songs into the project", error);
+      alert("Couldn't save the project: " + (error && error.message ? error.message : String(error)) + "\n\nNo need to delete your browser library; your added songs are still saved there.");
+    } finally {
+      qrExportButton.disabled = false;
+      if (qrExportButton.textContent !== "Project saved ✓") qrExportButton.textContent = "Save to project";
+    }
+  }
+  qrExportButton.addEventListener("click", qrExportAddedSongs);
+
+  async function qrRestoreLibrary(){
+    try{
+      const records=await qrLibraryRequest("readonly","getAll");
+      for(const record of records){
+        if(record.exported) continue;
+        const src="qr-added:"+record.id;
+        if(playlist.some(song=>song.src===src)) continue;
+        window.qrAddedMedia[src]=URL.createObjectURL(record.audio);
+        const song={title:record.title,artist:record.artist,src,cover:record.cover?URL.createObjectURL(record.cover):"",lyrics:record.lyricsText?record.lyricsText.split(/\r?\n/).filter(Boolean):[],translatedLyrics:record.translationText?record.translationText.split(/\r?\n/).filter(Boolean):[]};
+        if(record.artistImage){const artistUrl=URL.createObjectURL(record.artistImage);artistCovers[record.artist]=artistUrl;song.artistCover=artistUrl;}
+        playlist.push(song);
+      }
+      if(records.length){renderArtists();renderList();}
+    }catch(error){console.warn("Could not restore imported music library",error);}
+  }
+  qrRestoreLibrary();
+
   drawSpectrum();
   loadLyricsMode();
   renderArtists();

@@ -30,7 +30,9 @@ QR MUSIC PLAYER — STARTER PROJECT
    to its sleeve. Drag an ejected record onto its sleeve to put it away. The player has no
    separate sleeve beside the turntable. The page uses a neutral theme until a record is on the
    turntable, then switches to that song's theme; removing the record restores the neutral
-   theme. Drag song cards onto one another to reorder the playlist. The reordered list is
+   theme. Set `coverAsPageBackground: true` on a playlist entry to use its cover as the
+   full-page background while that record is on the turntable. Drag song cards onto one
+   another to reorder the playlist. The reordered list is
    saved in this browser. The record stays on the platter when paused. A tonearm swings
    onto the record during playback and parks when paused. Enable Auto-next to start each
    following song automatically (wrapping to the first track at the end), or use Random to
@@ -98,3 +100,22 @@ Notes:
 - Use audio files you own or have permission to distribute.
 - Phones usually require the listener to tap Play; browsers commonly block autoplay with sound.
 - Keep filenames simple (letters, numbers, hyphens) and match capitalization exactly.
+
+
+6. Add Song button (new):
+   Use + Add song to import audio, a song cover, an artist picture, and optional
+   original/translated lyric text files. Imported items are stored in this browser
+   using IndexedDB and restored on later visits in the same browser profile. They
+   are not automatically written into the project's songs/, cover/, artists/, or
+   lyrics/ folders and are not automatically uploaded to GitHub Pages. Browser
+   security requires an explicit folder permission workflow for writing project
+   files; keep a backup of this project before using any future folder-export tool.
+
+
+SHARING ADDED SONGS
+1. Open index.html from the extracted project folder.
+2. Add songs with + Add song.
+3. Click Save to project and choose this same project folder.
+4. The player writes MP3s, embedded audio scripts, covers, artist pictures, lyrics, and updates index.html.
+5. Share the entire project folder or upload all its contents to GitHub.
+Folder export requires a Chromium browser that supports the File System Access API.
