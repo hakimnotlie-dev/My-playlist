@@ -822,6 +822,11 @@
     try {
       const removed = JSON.parse(localStorage.getItem(removedSongSourcesKey) || "[]");
       if (!Array.isArray(removed)) return;
+      const remainingSongs = playlist.filter(song => !removed.includes(song.src));
+      if (playlist.length && !remainingSongs.length) {
+        localStorage.removeItem(removedSongSourcesKey);
+        return;
+      }
       for (let index = playlist.length - 1; index >= 0; index--) {
         if (removed.includes(playlist[index].src)) playlist.splice(index, 1);
       }
