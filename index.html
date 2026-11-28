@@ -14,6 +14,29 @@
     body { margin:0; min-height:100vh; background:var(--bg); background-attachment:fixed; color:var(--ink); font:16px/1.5 system-ui,-apple-system,Segoe UI,sans-serif; display:grid; place-items:center; padding:24px; transition:background .6s ease; }
     body::before { content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0; mix-blend-mode:multiply; background-image:repeating-radial-gradient(circle at 27% 38%,rgba(89,75,56,.26) 0 .6px,transparent .9px 3.4px),repeating-linear-gradient(117deg,rgba(255,255,255,.4) 0 1px,rgba(80,70,55,.09) 1px 3px); -webkit-mask-image:radial-gradient(ellipse 31% 26% at 17% 23%,#000 24%,transparent 100%),radial-gradient(ellipse 27% 23% at 83% 58%,#000 25%,transparent 100%),radial-gradient(ellipse 34% 24% at 43% 96%,#000 25%,transparent 100%); mask-image:radial-gradient(ellipse 31% 26% at 17% 23%,#000 24%,transparent 100%),radial-gradient(ellipse 27% 23% at 83% 58%,#000 25%,transparent 100%),radial-gradient(ellipse 34% 24% at 43% 96%,#000 25%,transparent 100%); transition:opacity .6s ease; }
     body.watercolor-paper::before { opacity:.38; }
+    body.blossom-paper::before { opacity:.28; mix-blend-mode:multiply; background-image:radial-gradient(ellipse at 22% 30%,rgba(255,244,187,.22),transparent 40%),repeating-radial-gradient(ellipse at 34% 52%,transparent 0 8px,rgba(94,68,17,.06) 9px 10px,transparent 11px 22px),repeating-linear-gradient(114deg,rgba(92,64,15,.07) 0 1px,transparent 2px 9px),repeating-linear-gradient(16deg,rgba(255,244,187,.09) 0 3px,transparent 4px 14px); -webkit-mask-image:none; mask-image:none; }
+    #blossomButterfly,#blossomButterflyCompanion { position:fixed; z-index:2; left:-10vw; top:72vh; display:none; width:clamp(34px,5vw,68px); height:auto; overflow:visible; opacity:0; scale:1; transform-box:view-box; transform-origin:center; pointer-events:auto; cursor:grab; touch-action:none; transition:left var(--butterfly-flight-time,2.4s) cubic-bezier(.32,.08,.28,1),top var(--butterfly-flight-time,2.4s) cubic-bezier(.32,.08,.28,1),transform .55s ease,opacity .28s ease; }
+    #blossomButterflyCompanion { width:clamp(30px,4.4vw,60px); pointer-events:none; cursor:default; }
+    body.butterflies-active #blossomButterfly,body.butterflies-active #blossomButterflyCompanion { display:block; }
+    #blossomButterfly:focus-visible { outline:2px solid #163a63; outline-offset:4px; }
+    #blossomButterfly.blossom-flying,#blossomButterfly.blossom-landed,#blossomButterfly.blossom-held,#blossomButterfly.blossom-orbiting,#blossomButterflyCompanion.blossom-flying,#blossomButterflyCompanion.blossom-landed,#blossomButterflyCompanion.blossom-orbiting { opacity:1; }
+    #blossomButterfly.blossom-landed,#blossomButterflyCompanion.blossom-landed { scale:.84; }
+    #blossomButterfly.blossom-flying,#blossomButterfly.blossom-orbiting,#blossomButterflyCompanion.blossom-flying,#blossomButterflyCompanion.blossom-orbiting { scale:1.08; }
+    #blossomButterfly.blossom-held { cursor:grabbing; transition:none; }
+    #blossomButterfly.blossom-landed,#blossomButterflyCompanion.blossom-landed { transition:none; }
+    #blossomButterflyCompanion.blossom-orbiting,#blossomButterfly.blossom-orbiting { transition:none; }
+    #butterflyRouteOverlay { position:fixed; inset:0; z-index:9; width:100vw; height:100vh; overflow:visible; pointer-events:none; }
+    #butterflyRoutePath { fill:none; stroke:rgba(255,255,255,.9); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; stroke-dasharray:7 8; filter:drop-shadow(0 1px 3px rgba(49,70,91,.8)); opacity:1; transition:opacity .9s ease; }
+    #butterflyRoutePath.fading { opacity:0; }
+    .butterfly-route-flower { pointer-events:none; }
+    .butterfly-route-flower-fall { transform-box:fill-box; transform-origin:center; animation:butterfly-route-flower-drop 1.8s ease-in forwards; }
+    @keyframes butterfly-route-flower-drop { to { opacity:0; transform:translate(8px,52px) rotate(120deg); } }
+    body.blossom-paper #blossomButterfly.blossom-dismissed { display:none; }
+    .blossom-butterfly-wings { transform-box:fill-box; transform-origin:center; animation:blossom-wing-flap .28s ease-in-out infinite alternate; }
+    #blossomButterfly.blossom-landed .blossom-butterfly-wings { animation-duration:1.35s; }
+    #blossomButterfly.blossom-held .blossom-butterfly-wings { animation-duration:1.8s; }
+    #blossomButterflyCompanion.blossom-landed .blossom-butterfly-wings,#blossomButterfly.blossom-orbiting .blossom-butterfly-wings,#blossomButterflyCompanion.blossom-orbiting .blossom-butterfly-wings { animation-duration:.38s; }
+    @keyframes blossom-wing-flap { to { transform:scaleX(.72) rotate(5deg); } }
     #nightSky { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; visibility:hidden; opacity:0; transition:opacity .7s ease; }
     body.gold-night-sky #nightSky { visibility:visible; opacity:1; }
     .star-field { position:absolute; inset:0; overflow:hidden; }
@@ -315,6 +338,7 @@
       .vinyl-disc,.floating-playlist-sleeve { transition:none; }
       #floatingTracks .vinyl-disc.ejecting .vinyl-rotor { animation:none; }
       .tonearm-swing,.turntable-platter { transition:none; }
+      body.butterflies-active #blossomButterfly,body.butterflies-active #blossomButterflyCompanion { display:none; }
     }
   
     .track { position: relative; }
@@ -403,6 +427,31 @@
     </g>
   </svg>
 <div id="floatingTracks" aria-label="Ejected playlist covers"></div>
+<svg id="blossomButterfly" viewBox="0 0 64 48" role="button" tabindex="0" aria-label="Pick up the butterfly and move it">
+  <g transform="rotate(87 32 24)">
+    <g class="blossom-butterfly-wings">
+      <path d="M31 23C25 7 11 2 6 8 1 14 13 26 29 29Z" fill="#1688d2" stroke="#111820" stroke-width="2.8"/>
+      <path d="M33 23C39 7 53 2 58 8 63 14 51 26 35 29Z" fill="#1688d2" stroke="#111820" stroke-width="2.8"/>
+      <path d="M29 27C18 23 12 29 16 36 20 42 27 37 31 30Z" fill="#2879bd" stroke="#111820" stroke-width="2.5"/>
+      <path d="M35 27C46 23 52 29 48 36 44 42 37 37 33 30Z" fill="#2879bd" stroke="#111820" stroke-width="2.5"/>
+    </g>
+    <path d="M32 18C29 22 29 29 32 34 35 29 35 22 32 18Z" fill="#151a20"/>
+    <path d="M31 20Q25 12 23 14M33 20Q39 12 41 14" fill="none" stroke="#151a20" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+<svg id="blossomButterflyCompanion" viewBox="0 0 64 48" aria-hidden="true" focusable="false">
+  <g transform="rotate(87 32 24)">
+    <g class="blossom-butterfly-wings">
+      <path d="M31 23C25 7 11 2 6 8 1 14 13 26 29 29Z" fill="#1688d2" stroke="#111820" stroke-width="2.8"/>
+      <path d="M33 23C39 7 53 2 58 8 63 14 51 26 35 29Z" fill="#1688d2" stroke="#111820" stroke-width="2.8"/>
+      <path d="M29 27C18 23 12 29 16 36 20 42 27 37 31 30Z" fill="#2879bd" stroke="#111820" stroke-width="2.5"/>
+      <path d="M35 27C46 23 52 29 48 36 44 42 37 37 33 30Z" fill="#2879bd" stroke="#111820" stroke-width="2.5"/>
+    </g>
+    <path d="M32 18C29 22 29 29 32 34 35 29 35 22 32 18Z" fill="#151a20"/>
+    <path d="M31 20Q25 12 23 14M33 20Q39 12 41 14" fill="none" stroke="#151a20" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+</svg>
+<svg id="butterflyRouteOverlay" aria-hidden="true"><path id="butterflyRoutePath"></path><g id="butterflyRouteFlowers"></g></svg>
 <div id="coverDots" aria-hidden="true"></div>
 <canvas id="rainCanvas" aria-hidden="true"></canvas>
 <canvas id="uiWaterCanvas" aria-hidden="true"></canvas>
@@ -460,7 +509,7 @@
     <span class="count" id="count"></span>
   </div>
   <div class="tracks" id="tracks"></div>
-  <footer>Drag a song card outside the playlist to move it freely; its slot and name read Blank until you drag it back into the list. Double-click a playlist card to pop out the whole card; double-click its cover to pop out the sleeve. The sleeve moves independently, and double-clicking a floating card body gives it the same pop animation. Click the sleeve to eject the record; drag it onto the turntable to play or back onto the sleeve to return it. Use Auto-next or Random to choose another song. Drag the player to move it or use the corner handle to resize. Drag anywhere on a lyric panel except its controls to move it.</footer>
+  <footer>Drag a song card outside the playlist to move it freely; its slot and name read Blank until you drag it back into the list. Double-click a playlist card to pop out the whole card; double-click its cover to pop out the sleeve. The sleeve moves independently, and double-clicking a floating card body gives it the same pop animation. Click the sleeve to eject the record; drag it onto the turntable to play or back onto the sleeve to return it. Use Auto-next or Random to choose another song. Drag the player to move it or use the corner handle to resize. Drag anywhere on a lyric panel except its controls to move it. On the golden-hour page, drag on empty space to draw a butterfly flight route.</footer>
   <button class="resize-handle" id="resizeHandle" aria-label="Resize player"></button>
 </main>
 <section class="lyrics-panel" id="originalLyricsPanel" aria-label="Original song lyrics">
@@ -764,7 +813,9 @@
     { title: "Em dạo này", artist: "ngọt", src: "songs/mysong3.mp3", cover: "cover/cover3.jpg", backgroundGradient: ["#ffe7f0", "#f09abc"] },
     { title: "So Long", artist: "Yonkagor", src: "songs/mysong4.mp3", cover: "cover/cover4.jpg", skyEffect: "gold-night" },
     { title: "Silly plan", artist: "Yonkagor", src: "songs/mysong5.mp3", cover: "cover/cover5.jpg", backgroundGradient: ["#eaf7ff", "#b9ddff"], ambientEffect: "watercolor", watercolorPalette: ["#e77da8", "#a9c77d", "#39a7e8"] },
-    { title: "Trước khi em tồn tại", artist: "ngọt", src: "songs/mysong6.mp3", cover: "cover/cover6.jpg", coverAsPageBackground: true }
+    { title: "Trước khi em tồn tại", artist: "ngọt", src: "songs/mysong6.mp3", cover: "cover/cover6.jpg", coverAsPageBackground: true },
+    { title: "golden hour", artist: "JVKE", src: "songs/mysong7.mp3", cover: "cover/cover7.jpg", backgroundGradient: ["#c99c25", "#f0d46d"], ambientEffect: "blossoms" },
+    { title: "From The Start", artist: "Laufey", src: "songs/mysong8.mp3", cover: "cover/cover8.jpg" }
   ];
   const removedSongSourcesKey = "qr-music-player-removed-songs";
   function restoreRemovedSongs() {
@@ -960,7 +1011,9 @@
   restorePlaylistOrder();
   const artistCovers = {
     "Yonkagor": "artists/Yonkagor.webp",
-    "ngọt": "artists/ngọt.jpg"
+    "ngọt": "artists/ngọt.jpg",
+    "JVKE": "cover/cover7.jpg",
+    "Laufey": "cover/cover8.jpg"
   };
 
   const audio = document.getElementById("audio");
@@ -1082,6 +1135,10 @@
   document.getElementById("nightSky").prepend(starField);
   const playerUi = document.querySelector("main");
   let current = 0;
+  function isButterflyTrackPlaying() {
+    const song = playlist[current];
+    return Boolean(song && song.ambientEffect === "blossoms" && !audio.paused && !audio.ended);
+  }
   let audioPlayRequest = 0;
   const audioSourceLoads = new Map();
   let autoNextEnabled = false;
@@ -1092,6 +1149,10 @@
 
   const heartCanvas = document.getElementById("heartCanvas");
   const heartContext = heartCanvas.getContext("2d");
+  const blossomButterfly = document.getElementById("blossomButterfly");
+  const companionButterfly = document.getElementById("blossomButterflyCompanion");
+  const butterflyRoutePath = document.getElementById("butterflyRoutePath");
+  const butterflyRouteFlowers = document.getElementById("butterflyRouteFlowers");
   const watercolorCanvas = document.getElementById("watercolorCanvas");
   const watercolorContext = watercolorCanvas.getContext("2d");
   const cloudShadowCanvas = document.getElementById("cloudShadowCanvas");
@@ -1103,6 +1164,7 @@
   let ambientMode = null;
   let leafPalette = [];
   let leafLastSpawn = 0;
+  let blossomFlowerLastSpawn = 0;
   let draggedShape = null;
   let watercolorEnabled = false;
   let watercolorPalette = [];
@@ -1110,6 +1172,52 @@
   let watercolorLastSplash = 0;
   let watercolorLastCloud = 0;
   const watercolorMotionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const ambientMotionAllowed = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let blossomLastSpawn = 0;
+  let butterflyFlightTimer = 0;
+  let butterflyLandingTimer = 0;
+  let companionFlightTimer = 0;
+  let companionLandingTimer = 0;
+  let butterflyOrbitTimer = 0;
+  let companionOrbitTimer = 0;
+  let butterflyFlightFrame = 0;
+  let companionFlightFrame = 0;
+  let butterflyOrbitFrame = 0;
+  let companionOrbitFrame = 0;
+  let butterflyOrbitActive = false;
+  let companionOrbitActive = false;
+  let butterflyCoupleOrbitActive = false;
+  let butterflyCoupleOrbitFrame = 0;
+  let companionButterflyState = "hidden";
+  let mainButterflyAnchor = null;
+  let companionButterflyAnchor = null;
+  let butterflyRoutePointerId = null;
+  let butterflyRoutePoints = [];
+  let butterflyRouteFrame = 0;
+  let butterflyRouteFadeTimer = 0;
+  const butterflyCoverObserver = new MutationObserver(() => {
+    [mainButterflyAnchor, companionButterflyAnchor].forEach(anchor => {
+      if (anchor && (!anchor.target.isConnected || anchor.target.classList.contains("cover-ejected"))) {
+        releaseButterfliesFromCover(anchor.target);
+      }
+    });
+  });
+  butterflyCoverObserver.observe(tracksEl, {
+    attributes: true,
+    attributeFilter: ["class"],
+    childList: true,
+    subtree: true
+  });
+  let butterflyClickTimer = 0;
+  let butterflyPointerId = null;
+  let butterflyPointerStart = null;
+  let butterflyPointerMoved = false;
+  let lastButterflyMousePosition = null;
+  let butterflyFleeCooldownUntil = 0;
+  let butterflyFleeTimer = 0;
+  let pendingButterflyFlee = null;
+  let butterflyHeldByKeyboard = false;
+  let butterflyState = "hidden";
 
   function resizeHeartCanvas() {
     const ratio = Math.min(window.devicePixelRatio || 1, 2);
@@ -1327,6 +1435,1183 @@
     });
   }
 
+  function spawnBlossomPetal() {
+    const size = 2.5 + Math.random() * 3;
+    ambientShapes.push({
+      shape: "blossom-petal",
+      x: Math.random() * window.innerWidth,
+      y: -size,
+      size,
+      age: 0,
+      life: 1,
+      duration: 360 + Math.random() * 180,
+      speedY: 0.75 + Math.random() * 0.8,
+      drift: (Math.random() - 0.5) * 0.35,
+      wave: Math.random() * Math.PI * 2,
+      rotation: (Math.random() - 0.5) * 2,
+      spin: (Math.random() - 0.5) * 0.018
+    });
+  }
+
+  function spawnBlossomFlower() {
+    ambientShapes.push({
+      shape: "blossom-flower",
+      x: window.innerWidth * (0.06 + Math.random() * 0.88),
+      y: window.innerHeight * (0.12 + Math.random() * 0.76),
+      size: 5 + Math.random() * 3,
+      age: 0,
+      life: 1,
+      duration: 780 + Math.random() * 240,
+      drift: (Math.random() - 0.5) * 0.18,
+      wave: Math.random() * Math.PI * 2,
+      rotation: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.0015
+    });
+  }
+
+  function clearButterflyTimers() {
+    window.clearTimeout(butterflyFlightTimer);
+    window.clearTimeout(butterflyLandingTimer);
+    butterflyFlightTimer = 0;
+    butterflyLandingTimer = 0;
+    if (butterflyFlightFrame) window.cancelAnimationFrame(butterflyFlightFrame);
+    butterflyFlightFrame = 0;
+  }
+
+  function clearCompanionButterflyTimers() {
+    window.clearTimeout(companionFlightTimer);
+    window.clearTimeout(companionLandingTimer);
+    companionFlightTimer = 0;
+    companionLandingTimer = 0;
+    if (companionFlightFrame) window.cancelAnimationFrame(companionFlightFrame);
+    companionFlightFrame = 0;
+  }
+
+  function scheduleButterflyFlight(delay) {
+    window.clearTimeout(butterflyFlightTimer);
+    butterflyFlightTimer = window.setTimeout(flyButterflyToRandomLanding, delay);
+  }
+
+  function scheduleCompanionFlight(delay) {
+    window.clearTimeout(companionFlightTimer);
+    companionFlightTimer = window.setTimeout(flyCompanionButterflyToRandomLanding, delay);
+  }
+
+  function butterflySize(element) {
+    const style = window.getComputedStyle(element);
+    return { width: parseFloat(style.width), height: parseFloat(style.height) };
+  }
+
+  function chooseButterflyLanding(width, height) {
+    const songCovers = Array.from(document.querySelectorAll(".track-cover-slot.has-cover:not(.cover-ejected)"))
+      .filter(cover => {
+        const rect = cover.getBoundingClientRect();
+        return rect.right > 0 && rect.left < window.innerWidth && rect.bottom > 0 && rect.top < window.innerHeight;
+      });
+    const landsOnSong = songCovers.length > 0 && Math.random() < 0.78;
+    if (landsOnSong) {
+      const cover = songCovers[Math.floor(Math.random() * songCovers.length)];
+      const rect = cover.getBoundingClientRect();
+      const anchorX = Math.random();
+      const anchorY = Math.random();
+      return {
+        left: clamp(rect.left + anchorX * rect.width - width / 2, 0, window.innerWidth - width),
+        top: clamp(rect.top + anchorY * rect.height - height / 2, 0, window.innerHeight - height),
+        onSong: true,
+        target: cover,
+        anchorX,
+        anchorY
+      };
+    }
+    return {
+      left: Math.random() * Math.max(0, window.innerWidth - width),
+      top: Math.random() * Math.max(0, window.innerHeight - height),
+      onSong: false
+    };
+  }
+
+  function chooseLandingNearButterfly(targetButterfly, width, height, spread) {
+    const rect = targetButterfly.getBoundingClientRect();
+    return {
+      left: clamp(rect.left + rect.width / 2 + (Math.random() - 0.5) * spread - width / 2, 0, window.innerWidth - width),
+      top: clamp(rect.top + rect.height / 2 + (Math.random() - 0.5) * spread - height / 2, 0, window.innerHeight - height),
+      onSong: false
+    };
+  }
+
+  function butterflyCenter(element) {
+    const rect = element.getBoundingClientRect();
+    return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+  }
+
+  function measureButterflyPath(points) {
+    const cumulativeLengths = [0];
+    for (let index = 1; index < points.length; index++) {
+      const previous = points[index - 1];
+      const currentPoint = points[index];
+      cumulativeLengths.push(cumulativeLengths[index - 1]
+        + Math.hypot(currentPoint.x - previous.x, currentPoint.y - previous.y));
+    }
+    return { cumulativeLengths, totalLength: cumulativeLengths[cumulativeLengths.length - 1] || 0 };
+  }
+
+  function pointOnButterflyPath(points, cumulativeLengths, distance) {
+    let segment = 1;
+    while (segment < cumulativeLengths.length - 1 && cumulativeLengths[segment] < distance) segment++;
+    const segmentLength = cumulativeLengths[segment] - cumulativeLengths[segment - 1];
+    const progress = segmentLength
+      ? clamp((distance - cumulativeLengths[segment - 1]) / segmentLength, 0, 1)
+      : 1;
+    const from = points[segment - 1];
+    const to = points[segment];
+    return {
+      x: from.x + (to.x - from.x) * progress,
+      y: from.y + (to.y - from.y) * progress,
+      heading: Math.atan2(to.y - from.y, to.x - from.x)
+    };
+  }
+
+  function sampleSmoothButterflyPath(controlPoints, samplesPerSegment=12) {
+    const points = [];
+    for (let segment = 0; segment < controlPoints.length - 1; segment++) {
+      const p0 = controlPoints[Math.max(0, segment - 1)];
+      const p1 = controlPoints[segment];
+      const p2 = controlPoints[segment + 1];
+      const p3 = controlPoints[Math.min(controlPoints.length - 1, segment + 2)];
+      for (let sample = 0; sample < samplesPerSegment; sample++) {
+        const t = sample / samplesPerSegment;
+        const t2 = t * t;
+        const t3 = t2 * t;
+        points.push({
+          x: 0.5 * ((2 * p1.x) + (-p0.x + p2.x) * t
+            + (2 * p0.x - 5 * p1.x + 4 * p2.x - p3.x) * t2
+            + (-p0.x + 3 * p1.x - 3 * p2.x + p3.x) * t3),
+          y: 0.5 * ((2 * p1.y) + (-p0.y + p2.y) * t
+            + (2 * p0.y - 5 * p1.y + 4 * p2.y - p3.y) * t2
+            + (-p0.y + 3 * p1.y - 3 * p2.y + p3.y) * t3)
+        });
+      }
+    }
+    points.push(controlPoints[controlPoints.length - 1]);
+    return points;
+  }
+
+  function createNaturalButterflyPath(start, target) {
+    const dx = target.x - start.x;
+    const dy = target.y - start.y;
+    const distance = Math.max(1, Math.hypot(dx, dy));
+    const directionX = dx / distance;
+    const directionY = dy / distance;
+    const perpendicularX = -directionY;
+    const perpendicularY = directionX;
+    const segmentCount = clamp(Math.ceil(distance / 190) + 1, 3, 7);
+    const maxBend = Math.min(170, Math.max(32, distance * 0.3));
+    const phase = Math.random() * Math.PI * 2;
+    const waveCount = 2 + Math.floor(Math.random() * 3);
+    const controlPoints = [start];
+
+    for (let index = 1; index < segmentCount; index++) {
+      const progress = index / segmentCount;
+      const envelope = Math.sin(progress * Math.PI);
+      const wave = Math.sin(progress * Math.PI * waveCount + phase);
+      const lateral = ((Math.random() - 0.5) * 1.4 + wave * 0.35) * maxBend * envelope;
+      const forward = Math.cos(progress * Math.PI * 2 + phase) * Math.min(52, distance * 0.1) * envelope;
+      controlPoints.push({
+        x: start.x + dx * progress + perpendicularX * lateral + directionX * forward,
+        y: start.y + dy * progress + perpendicularY * lateral + directionY * forward
+      });
+    }
+    controlPoints.push(target);
+    return sampleSmoothButterflyPath(controlPoints);
+  }
+
+  function animateButterflyOnPath(element, points, duration, onComplete) {
+    const isCompanion = element === companionButterfly;
+    const stateIsFlying = () => isCompanion
+      ? companionButterflyState === "flying"
+      : butterflyState === "flying";
+    const path = measureButterflyPath(points);
+    if (path.totalLength < 1) {
+      onComplete();
+      return;
+    }
+    const started = performance.now();
+    const startHeading = readButterflyAngle(element);
+
+    function animate(now) {
+      if (!stateIsFlying()) {
+        if (isCompanion) companionFlightFrame = 0;
+        else butterflyFlightFrame = 0;
+        return;
+      }
+      const elapsed = now - started;
+      const progress = clamp(elapsed / duration, 0, 1);
+      const point = pointOnButterflyPath(points, path.cumulativeLengths, path.totalLength * progress);
+      positionButterflyElementAt(element, point.x, point.y);
+      const heading = interpolateAngle(
+        startHeading,
+        point.heading * 180 / Math.PI,
+        clamp(elapsed / 500, 0, 1)
+      );
+      element.style.transform = "rotate(" + heading.toFixed(1) + "deg)";
+      if (progress < 1) {
+        const frame = window.requestAnimationFrame(animate);
+        if (isCompanion) companionFlightFrame = frame;
+        else butterflyFlightFrame = frame;
+        return;
+      }
+      if (isCompanion) companionFlightFrame = 0;
+      else butterflyFlightFrame = 0;
+      onComplete();
+    }
+
+    const frame = window.requestAnimationFrame(animate);
+    if (isCompanion) companionFlightFrame = frame;
+    else butterflyFlightFrame = frame;
+  }
+
+  function setButterflyAnchor(element, landing) {
+    const anchor = landing && landing.target && landing.target.isConnected && !landing.target.classList.contains("cover-ejected")
+      ? { target: landing.target, x: landing.anchorX, y: landing.anchorY }
+      : null;
+    if (element === blossomButterfly) mainButterflyAnchor = anchor;
+    else companionButterflyAnchor = anchor;
+  }
+
+  function updateOneButterflyAnchor(element, anchor) {
+    if (!anchor) return;
+    if (!anchor.target.isConnected || anchor.target.classList.contains("cover-ejected")) {
+      releaseButterfliesFromCover(anchor.target);
+      return;
+    }
+    const rect = anchor.target.getBoundingClientRect();
+    const { width, height } = butterflySize(element);
+    element.style.left = rect.left + anchor.x * rect.width - width / 2 + "px";
+    element.style.top = rect.top + anchor.y * rect.height - height / 2 + "px";
+  }
+
+  function updateButterflyAnchors() {
+    updateOneButterflyAnchor(blossomButterfly, mainButterflyAnchor);
+    updateOneButterflyAnchor(companionButterfly, companionButterflyAnchor);
+  }
+
+  window.addEventListener("scroll", updateButterflyAnchors, true);
+
+  function releaseButterfliesFromCover(cover) {
+    if (mainButterflyAnchor && mainButterflyAnchor.target === cover) {
+      mainButterflyAnchor = null;
+      if (butterflyState === "landed") {
+        clearButterflyTimers();
+        scheduleButterflyFlight(100);
+      }
+      scheduleButterflyOrbit(false, 12000 + Math.random() * 10000);
+    }
+    if (companionButterflyAnchor && companionButterflyAnchor.target === cover) {
+      companionButterflyAnchor = null;
+      if (companionButterflyState === "landed") {
+        window.clearTimeout(companionFlightTimer);
+        window.clearTimeout(companionLandingTimer);
+        scheduleCompanionFlight(120);
+      }
+      scheduleButterflyOrbit(true, 12000 + Math.random() * 10000);
+    }
+  }
+
+  function sendButterfliesAwayFromUi() {
+    stopButterflyOrbit(blossomButterfly);
+    stopButterflyOrbit(companionButterfly);
+    mainButterflyAnchor = null;
+    companionButterflyAnchor = null;
+    if (butterflyState === "landed") {
+      clearButterflyTimers();
+      scheduleButterflyFlight(100);
+    }
+    if (companionButterflyState === "landed") {
+      window.clearTimeout(companionFlightTimer);
+      window.clearTimeout(companionLandingTimer);
+      scheduleCompanionFlight(120);
+    }
+    scheduleButterflyOrbit(false, 10000 + Math.random() * 10000);
+    scheduleButterflyOrbit(true, 12000 + Math.random() * 12000);
+  }
+
+  function scheduleButterflyOrbit(isCompanion, delay) {
+    window.clearTimeout(isCompanion ? companionOrbitTimer : butterflyOrbitTimer);
+    const timer = window.setTimeout(() => {
+      if (isCompanion) companionOrbitTimer = 0;
+      else butterflyOrbitTimer = 0;
+      if (!ambientMotionAllowed || !document.body.classList.contains("butterflies-active")) return;
+      const state = isCompanion ? companionButterflyState : butterflyState;
+      if (state === "landed") {
+        startButterflyOrbit(isCompanion);
+      } else if (state === "flying" || state === "waiting" || state === "route") {
+        scheduleButterflyOrbit(isCompanion, 2500 + Math.random() * 3500);
+      }
+    }, delay);
+    if (isCompanion) companionOrbitTimer = timer;
+    else butterflyOrbitTimer = timer;
+  }
+
+  function stopButterflyOrbit(element) {
+    if (butterflyCoupleOrbitActive) {
+      stopButterflyCoupleOrbit();
+      return;
+    }
+    const isCompanion = element === companionButterfly;
+    const active = isCompanion ? companionOrbitActive : butterflyOrbitActive;
+    if (!active) return;
+    if (isCompanion) {
+      companionOrbitActive = false;
+      window.cancelAnimationFrame(companionOrbitFrame);
+      companionOrbitFrame = 0;
+      companionButterflyState = "landed";
+    } else {
+      butterflyOrbitActive = false;
+      window.cancelAnimationFrame(butterflyOrbitFrame);
+      butterflyOrbitFrame = 0;
+      butterflyState = "landed";
+    }
+    element.classList.remove("blossom-orbiting");
+    element.classList.add("blossom-landed");
+    element.style.removeProperty("transition");
+  }
+
+  function readButterflyAngle(element) {
+    const transform = window.getComputedStyle(element).transform;
+    const matrix = transform.match(/^matrix\(([^)]+)\)$/);
+    if (!matrix) return 0;
+    const [a, b] = matrix[1].split(",").map(Number);
+    return Math.atan2(b, a) * 180 / Math.PI;
+  }
+
+  function interpolateAngle(start, end, amount) {
+    let delta = (end - start) % 360;
+    if (delta > 180) delta -= 360;
+    if (delta < -180) delta += 360;
+    return start + delta * amount;
+  }
+
+  function createOrganicOrbitPath(center, radiusX, radiusY) {
+    const phaseA = Math.random() * Math.PI * 2;
+    const phaseB = Math.random() * Math.PI * 2;
+    const lobes = 2 + Math.floor(Math.random() * 3);
+    return phase => {
+      const xRadius = 1 + Math.sin(phase * lobes + phaseA) * 0.13
+        + Math.cos(phase * (lobes + 2) + phaseB) * 0.06;
+      const yRadius = 1 + Math.cos(phase * (lobes - 1) + phaseB) * 0.13
+        + Math.sin(phase * (lobes + 1) + phaseA) * 0.06;
+      return {
+        x: center.x + Math.cos(phase) * radiusX * xRadius
+          + Math.sin(phase * 2 + phaseB) * radiusX * 0.06,
+        y: center.y + Math.sin(phase) * radiusY * yRadius
+          + Math.cos(phase * 3 + phaseA) * radiusY * 0.06
+      };
+    };
+  }
+
+  function finishButterflyCoupleOrbit() {
+    if (!butterflyCoupleOrbitActive) return;
+    butterflyCoupleOrbitActive = false;
+    butterflyCoupleOrbitFrame = 0;
+    butterflyOrbitActive = false;
+    companionOrbitActive = false;
+    butterflyOrbitFrame = 0;
+    companionOrbitFrame = 0;
+    butterflyState = "landed";
+    companionButterflyState = "landed";
+    [blossomButterfly, companionButterfly].forEach(element => {
+      element.classList.remove("blossom-orbiting");
+      element.classList.add("blossom-landed");
+      element.style.removeProperty("transition");
+    });
+    blossomButterfly.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+    scheduleButterflyFlight(1800 + Math.random() * 2600);
+    scheduleCompanionFlight(1800 + Math.random() * 2600);
+    scheduleButterflyOrbit(false, 12000 + Math.random() * 14000);
+    scheduleButterflyOrbit(true, 12000 + Math.random() * 14000);
+  }
+
+  function stopButterflyCoupleOrbit() {
+    if (!butterflyCoupleOrbitActive) return;
+    window.cancelAnimationFrame(butterflyCoupleOrbitFrame);
+    finishButterflyCoupleOrbit();
+  }
+
+  function startButterflyCoupleOrbit() {
+    if (butterflyCoupleOrbitActive || !document.body.classList.contains("butterflies-active")
+      || (butterflyState !== "landed" && butterflyState !== "orbiting")
+      || (companionButterflyState !== "landed" && companionButterflyState !== "orbiting")) return false;
+    const distanceBetweenButterflies = Math.hypot(
+      butterflyCenter(blossomButterfly).x - butterflyCenter(companionButterfly).x,
+      butterflyCenter(blossomButterfly).y - butterflyCenter(companionButterfly).y
+    );
+    if (distanceBetweenButterflies > 260) return false;
+
+    if (butterflyOrbitActive) stopButterflyOrbit(blossomButterfly);
+    if (companionOrbitActive) stopButterflyOrbit(companionButterfly);
+    clearButterflyTimers();
+    clearCompanionButterflyTimers();
+    window.clearTimeout(butterflyOrbitTimer);
+    window.clearTimeout(companionOrbitTimer);
+    butterflyOrbitTimer = 0;
+    companionOrbitTimer = 0;
+
+    const mainStart = butterflyCenter(blossomButterfly);
+    const companionStart = butterflyCenter(companionButterfly);
+    const center = {
+      x: (mainStart.x + companionStart.x) / 2,
+      y: (mainStart.y + companionStart.y) / 2
+    };
+    const mainSize = butterflySize(blossomButterfly);
+    const companionSize = butterflySize(companionButterfly);
+    const halfWidth = Math.max(mainSize.width, companionSize.width) / 2;
+    const halfHeight = Math.max(mainSize.height, companionSize.height) / 2;
+    const availableX = Math.max(0, Math.min(center.x - halfWidth, window.innerWidth - center.x - halfWidth));
+    const availableY = Math.max(0, Math.min(center.y - halfHeight, window.innerHeight - center.y - halfHeight));
+    const separation = Math.hypot(mainStart.x - companionStart.x, mainStart.y - companionStart.y);
+    const radiusX = Math.min(88, availableX / 1.4, Math.max(28, separation * 0.48));
+    const radiusY = Math.min(68, availableY / 1.4, Math.max(24, separation * 0.36));
+    const orbitPath = createOrganicOrbitPath(center, radiusX, radiusY);
+    const phaseStart = Math.random() * Math.PI * 2;
+    const chaseGap = 1.05 + Math.random() * 0.3;
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    const cycleCount = 1.15 + Math.random() * 0.35;
+    const duration = 7000 + Math.random() * 2500;
+    const entryDuration = 900;
+    const mainStartHeading = readButterflyAngle(blossomButterfly);
+    const companionStartHeading = readButterflyAngle(companionButterfly);
+    const started = performance.now();
+
+    butterflyState = "orbiting";
+    companionButterflyState = "orbiting";
+    butterflyCoupleOrbitActive = true;
+    butterflyOrbitActive = true;
+    companionOrbitActive = true;
+    mainButterflyAnchor = null;
+    companionButterflyAnchor = null;
+    [blossomButterfly, companionButterfly].forEach(element => {
+      element.classList.remove("blossom-landed", "blossom-flying");
+      element.classList.add("blossom-orbiting");
+      element.style.transition = "none";
+    });
+    blossomButterfly.setAttribute("aria-label", "Butterflies chasing each other along a looping path");
+
+    function animateCoupleOrbit(now) {
+      if (!butterflyCoupleOrbitActive) return;
+      const elapsed = now - started;
+      const progress = elapsed / duration;
+      const phase = phaseStart + direction * Math.PI * 2 * cycleCount * progress;
+      const gap = chaseGap + Math.sin(elapsed * 0.0013) * 0.1;
+      const entry = clamp(elapsed / entryDuration, 0, 1);
+      const entryEase = entry * entry * (3 - 2 * entry);
+      const mainPoint = orbitPath(phase);
+      const companionPhase = phase - direction * gap;
+      const companionPoint = orbitPath(companionPhase);
+      const mainAhead = orbitPath(phase + direction * 0.01);
+      const companionAhead = orbitPath(companionPhase + direction * 0.01);
+      const mainHeading = Math.atan2(mainAhead.y - mainPoint.y, mainAhead.x - mainPoint.x) * 180 / Math.PI;
+      const companionHeading = Math.atan2(
+        companionAhead.y - companionPoint.y,
+        companionAhead.x - companionPoint.x
+      ) * 180 / Math.PI;
+
+      positionButterflyElementAt(
+        blossomButterfly,
+        mainStart.x + (mainPoint.x - mainStart.x) * entryEase,
+        mainStart.y + (mainPoint.y - mainStart.y) * entryEase
+      );
+      positionButterflyElementAt(
+        companionButterfly,
+        companionStart.x + (companionPoint.x - companionStart.x) * entryEase,
+        companionStart.y + (companionPoint.y - companionStart.y) * entryEase
+      );
+      blossomButterfly.style.transform = "rotate("
+        + interpolateAngle(mainStartHeading, mainHeading, entry).toFixed(1) + "deg)";
+      companionButterfly.style.transform = "rotate("
+        + interpolateAngle(companionStartHeading, companionHeading, entry).toFixed(1) + "deg)";
+
+      if (elapsed < duration) {
+        butterflyCoupleOrbitFrame = window.requestAnimationFrame(animateCoupleOrbit);
+        return;
+      }
+      finishButterflyCoupleOrbit();
+    }
+
+    butterflyCoupleOrbitFrame = window.requestAnimationFrame(animateCoupleOrbit);
+    return true;
+  }
+
+  function startButterflyOrbit(isCompanion) {
+    const element = isCompanion ? companionButterfly : blossomButterfly;
+    const state = isCompanion ? companionButterflyState : butterflyState;
+    const otherState = isCompanion ? butterflyState : companionButterflyState;
+    if (state !== "landed" || !document.body.classList.contains("butterflies-active")
+      || butterflyCoupleOrbitActive) return;
+    if ((otherState === "landed" || otherState === "orbiting") && startButterflyCoupleOrbit()) return;
+
+    if (isCompanion) {
+      companionOrbitActive = true;
+      clearCompanionButterflyTimers();
+      companionButterflyAnchor = null;
+      companionButterflyState = "orbiting";
+    } else {
+      butterflyOrbitActive = true;
+      clearButterflyTimers();
+      mainButterflyAnchor = null;
+      butterflyState = "orbiting";
+    }
+
+    const start = butterflyCenter(element);
+    const { width, height } = butterflySize(element);
+    const availableX = Math.max(0, Math.min(start.x - width / 2, window.innerWidth - start.x - width / 2));
+    const availableY = Math.max(0, Math.min(start.y - height / 2, window.innerHeight - start.y - height / 2));
+    const radiusX = Math.min(48, availableX / 1.4, 28 + Math.random() * 18);
+    const radiusY = Math.min(40, availableY / 1.4, 22 + Math.random() * 16);
+    const orbitPath = createOrganicOrbitPath(start, radiusX, radiusY);
+    const phaseStart = Math.random() * Math.PI * 2;
+    const startHeading = readButterflyAngle(element);
+    const direction = Math.random() < 0.5 ? -1 : 1;
+    const cycleCount = 0.85 + Math.random() * 0.45;
+    const duration = 4200 + Math.random() * 2000;
+    const started = performance.now();
+    element.classList.remove("blossom-landed");
+    element.classList.add("blossom-orbiting");
+    element.style.transition = "none";
+    if (!isCompanion) element.setAttribute("aria-label", "Butterfly following a looping flight path");
+
+    function animateSoloOrbit(now) {
+      const active = isCompanion ? companionOrbitActive : butterflyOrbitActive;
+      if (!active) return;
+      const elapsed = now - started;
+      const progress = elapsed / duration;
+      const phase = phaseStart + direction * Math.PI * 2 * cycleCount * progress;
+      const entry = clamp(elapsed / 700, 0, 1);
+      const entryEase = entry * entry * (3 - 2 * entry);
+      const point = orbitPath(phase);
+      const ahead = orbitPath(phase + direction * 0.01);
+      const desiredHeading = Math.atan2(ahead.y - point.y, ahead.x - point.x) * 180 / Math.PI;
+      positionButterflyElementAt(
+        element,
+        start.x + (point.x - start.x) * entryEase,
+        start.y + (point.y - start.y) * entryEase
+      );
+      element.style.transform = "rotate("
+        + interpolateAngle(startHeading, desiredHeading, entry).toFixed(1) + "deg)";
+      if (elapsed < duration) {
+        const frame = window.requestAnimationFrame(animateSoloOrbit);
+        if (isCompanion) companionOrbitFrame = frame;
+        else butterflyOrbitFrame = frame;
+        return;
+      }
+
+      if (isCompanion) {
+        companionOrbitActive = false;
+        companionOrbitFrame = 0;
+        companionButterflyState = "landed";
+      } else {
+        butterflyOrbitActive = false;
+        butterflyOrbitFrame = 0;
+        butterflyState = "landed";
+        element.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+      }
+      element.classList.remove("blossom-orbiting");
+      element.classList.add("blossom-landed");
+      element.style.removeProperty("transition");
+      if (isCompanion) scheduleCompanionFlight(1800 + Math.random() * 2600);
+      else scheduleButterflyFlight(1800 + Math.random() * 2600);
+      scheduleButterflyOrbit(isCompanion, 12000 + Math.random() * 14000);
+    }
+
+    const frame = window.requestAnimationFrame(animateSoloOrbit);
+    if (isCompanion) companionOrbitFrame = frame;
+    else butterflyOrbitFrame = frame;
+  }
+
+  function flyButterflyToRandomLanding() {
+    butterflyFlightTimer = 0;
+    if (!ambientMotionAllowed || !document.body.classList.contains("butterflies-active")
+      || butterflyState === "held" || butterflyState === "hidden"
+      || butterflyOrbitActive || butterflyCoupleOrbitActive) return;
+    const size = butterflySize(blossomButterfly);
+    const landing = (companionButterflyState === "flying" || companionButterflyState === "landed")
+      && Math.random() < 0.38
+      ? chooseLandingNearButterfly(companionButterfly, size.width, size.height, 190)
+      : chooseButterflyLanding(size.width, size.height);
+    const start = butterflyCenter(blossomButterfly);
+    const target = { x: landing.left + size.width / 2, y: landing.top + size.height / 2 };
+    const path = createNaturalButterflyPath(start, target);
+    const pathLength = measureButterflyPath(path).totalLength;
+    const duration = clamp(pathLength * 5.2, 1800, 9000);
+    const pause = landing.onSong ? 3500 + Math.random() * 6500 : 1400 + Math.random() * 5000;
+    mainButterflyAnchor = null;
+    butterflyState = "flying";
+    blossomButterfly.classList.remove("blossom-landed");
+    blossomButterfly.classList.add("blossom-flying");
+    blossomButterfly.style.transition = "none";
+    blossomButterfly.setAttribute("aria-label", "Butterfly flying; pick it up to move it");
+    animateButterflyOnPath(blossomButterfly, path, duration, () => {
+      butterflyState = "landed";
+      blossomButterfly.classList.remove("blossom-flying");
+      blossomButterfly.classList.add("blossom-landed");
+      blossomButterfly.style.removeProperty("transition");
+      blossomButterfly.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+      if (landing.target && (!landing.target.isConnected || landing.target.classList.contains("cover-ejected"))) {
+        scheduleButterflyFlight(100);
+      } else {
+        setButterflyAnchor(blossomButterfly, landing);
+        scheduleButterflyFlight(pause);
+      }
+    });
+  }
+
+  function flyCompanionButterflyToRandomLanding() {
+    companionFlightTimer = 0;
+    if (!ambientMotionAllowed || !document.body.classList.contains("butterflies-active")
+      || companionButterflyState === "hidden" || companionOrbitActive || butterflyCoupleOrbitActive) return;
+    const size = butterflySize(companionButterfly);
+    const mainIsAvailable = butterflyState === "flying" || butterflyState === "landed";
+    const landing = mainIsAvailable && Math.random() < 0.72
+      ? chooseLandingNearButterfly(blossomButterfly, size.width, size.height, 150)
+      : chooseButterflyLanding(size.width, size.height);
+    const start = butterflyCenter(companionButterfly);
+    const target = { x: landing.left + size.width / 2, y: landing.top + size.height / 2 };
+    const path = createNaturalButterflyPath(start, target);
+    const pathLength = measureButterflyPath(path).totalLength;
+    const duration = clamp(pathLength * 5.2, 1800, 9000);
+    const pause = 1600 + Math.random() * 3200;
+    companionButterflyAnchor = null;
+    companionButterflyState = "flying";
+    companionButterfly.classList.remove("blossom-landed");
+    companionButterfly.classList.add("blossom-flying");
+    companionButterfly.style.transition = "none";
+    animateButterflyOnPath(companionButterfly, path, duration, () => {
+      companionButterflyState = "landed";
+      companionButterfly.classList.remove("blossom-flying");
+      companionButterfly.classList.add("blossom-landed");
+      companionButterfly.style.removeProperty("transition");
+      if (landing.target && (!landing.target.isConnected || landing.target.classList.contains("cover-ejected"))) {
+        scheduleCompanionFlight(120);
+      } else {
+        setButterflyAnchor(companionButterfly, landing);
+        scheduleCompanionFlight(pause);
+      }
+    });
+  }
+
+  function stopCompanionButterflyFlight() {
+    if (butterflyCoupleOrbitActive) stopButterflyCoupleOrbit();
+    clearCompanionButterflyTimers();
+    window.clearTimeout(companionOrbitTimer);
+    companionOrbitTimer = 0;
+    if (companionOrbitActive) {
+      companionOrbitActive = false;
+      window.cancelAnimationFrame(companionOrbitFrame);
+      companionOrbitFrame = 0;
+    }
+    companionButterflyState = "hidden";
+    companionButterflyAnchor = null;
+    companionButterfly.classList.remove("blossom-flying", "blossom-landed", "blossom-orbiting");
+    companionButterfly.style.transition = "none";
+    companionButterfly.style.left = "-10vw";
+    companionButterfly.style.top = "72vh";
+    companionButterfly.style.transform = "";
+  }
+
+  function startButterflyFlight() {
+    cancelButterflyRoute();
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    window.clearTimeout(butterflyClickTimer);
+    butterflyClickTimer = 0;
+    stopCompanionButterflyFlight();
+    mainButterflyAnchor = null;
+    companionButterfly.style.removeProperty("transition");
+    butterflyState = "hidden";
+    blossomButterfly.classList.remove("blossom-flying", "blossom-landed", "blossom-held", "blossom-orbiting", "blossom-dismissed");
+    blossomButterfly.style.removeProperty("transition");
+    blossomButterfly.style.removeProperty("--butterfly-flight-time");
+    blossomButterfly.style.left = "-10vw";
+    blossomButterfly.style.top = "72vh";
+    blossomButterfly.style.transform = "";
+    blossomButterfly.setAttribute("aria-hidden", "false");
+    blossomButterfly.tabIndex = 0;
+    if (!ambientMotionAllowed || !document.body.classList.contains("blossom-paper")
+      || !isButterflyTrackPlaying()) return;
+    document.body.classList.add("butterflies-active");
+    butterflyState = "waiting";
+    companionButterflyState = "waiting";
+    blossomButterfly.setAttribute("aria-label", "Butterfly; pick it up to move it");
+    scheduleButterflyFlight(350 + Math.random() * 900);
+    scheduleCompanionFlight(800 + Math.random() * 1000);
+    scheduleButterflyOrbit(false, 7000 + Math.random() * 9000);
+    scheduleButterflyOrbit(true, 10000 + Math.random() * 11000);
+  }
+
+  function stopButterflyFlight() {
+    document.body.classList.remove("butterflies-active");
+    cancelButterflyRoute();
+    window.clearTimeout(butterflyFleeTimer);
+    butterflyFleeTimer = 0;
+    pendingButterflyFlee = null;
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    window.clearTimeout(butterflyClickTimer);
+    butterflyClickTimer = 0;
+    stopCompanionButterflyFlight();
+    butterflyState = "hidden";
+    mainButterflyAnchor = null;
+    butterflyPointerId = null;
+    butterflyHeldByKeyboard = false;
+    blossomButterfly.classList.remove("blossom-flying", "blossom-landed", "blossom-held", "blossom-orbiting");
+    blossomButterfly.style.transition = "none";
+    blossomButterfly.style.left = "-10vw";
+    blossomButterfly.style.top = "72vh";
+    blossomButterfly.style.transform = "";
+    blossomButterfly.setAttribute("aria-label", "Pick up the butterfly and move it");
+  }
+
+  function positionButterflyElementAt(element, x, y) {
+    const { width, height } = butterflySize(element);
+    element.style.left = clamp(x - width / 2, 0, window.innerWidth - width) + "px";
+    element.style.top = clamp(y - height / 2, 0, window.innerHeight - height) + "px";
+  }
+
+  function positionButterflyAt(x, y) {
+    positionButterflyElementAt(blossomButterfly, x, y);
+  }
+
+  function updateButterflyRoutePath(points) {
+    butterflyRoutePath.classList.remove("fading");
+    butterflyRoutePath.setAttribute("d", points.map((point, index) =>
+      (index === 0 ? "M " : "L ") + point.x.toFixed(1) + " " + point.y.toFixed(1)
+    ).join(" "));
+  }
+
+  function cancelButterflyRoute() {
+    if (butterflyRouteFrame) window.cancelAnimationFrame(butterflyRouteFrame);
+    butterflyRouteFrame = 0;
+    butterflyRoutePointerId = null;
+    butterflyRoutePoints = [];
+    window.clearTimeout(butterflyRouteFadeTimer);
+    butterflyRouteFadeTimer = 0;
+    butterflyRoutePath.classList.remove("fading");
+    butterflyRoutePath.removeAttribute("d");
+    if (butterflyState === "route") {
+      butterflyState = "landed";
+      blossomButterfly.classList.remove("blossom-flying");
+      blossomButterfly.classList.add("blossom-landed");
+    }
+  }
+
+  function fadeButterflyRoutePath() {
+    butterflyRoutePath.classList.add("fading");
+    window.clearTimeout(butterflyRouteFadeTimer);
+    butterflyRouteFadeTimer = window.setTimeout(() => {
+      butterflyRoutePath.removeAttribute("d");
+      butterflyRoutePath.classList.remove("fading");
+      butterflyRouteFadeTimer = 0;
+    }, 900);
+  }
+
+  function dropButterflyRouteFlower(x, y) {
+    const namespace = "http://www.w3.org/2000/svg";
+    const flower = document.createElementNS(namespace, "g");
+    flower.setAttribute("class", "butterfly-route-flower");
+    flower.setAttribute("transform", "translate(" + x.toFixed(1) + " " + y.toFixed(1) + ")");
+    const fallingBloom = document.createElementNS(namespace, "g");
+    fallingBloom.setAttribute("class", "butterfly-route-flower-fall");
+    for (let petalIndex = 0; petalIndex < 5; petalIndex++) {
+      const petal = document.createElementNS(namespace, "ellipse");
+      petal.setAttribute("cx", "0");
+      petal.setAttribute("cy", "-3");
+      petal.setAttribute("rx", "2");
+      petal.setAttribute("ry", "3");
+      petal.setAttribute("fill", "#fff");
+      petal.setAttribute("transform", "rotate(" + petalIndex * 72 + ")");
+      fallingBloom.appendChild(petal);
+    }
+    const center = document.createElementNS(namespace, "circle");
+    center.setAttribute("r", "1.5");
+    center.setAttribute("fill", "#e7c85d");
+    fallingBloom.appendChild(center);
+    flower.appendChild(fallingBloom);
+    butterflyRouteFlowers.appendChild(flower);
+    window.setTimeout(() => flower.remove(), 2000);
+  }
+
+  function coverAnchorAtPoint(point) {
+    const cover = document.elementsFromPoint(point.x, point.y)
+      .map(element => element.closest(".track-cover-slot.has-cover:not(.cover-ejected)"))
+      .find(Boolean);
+    if (!cover) return null;
+    const rect = cover.getBoundingClientRect();
+    return {
+      left: point.x - butterflySize(blossomButterfly).width / 2,
+      top: point.y - butterflySize(blossomButterfly).height / 2,
+      onSong: true,
+      target: cover,
+      anchorX: clamp((point.x - rect.left) / rect.width, 0, 1),
+      anchorY: clamp((point.y - rect.top) / rect.height, 0, 1)
+    };
+  }
+
+  function flyButterflyAlongRoute(route) {
+    const start = butterflyCenter(blossomButterfly);
+    const points = [start].concat(route);
+    const cumulativeLengths = [0];
+    for (let index = 1; index < points.length; index++) {
+      const previous = points[index - 1];
+      const currentPoint = points[index];
+      cumulativeLengths.push(cumulativeLengths[index - 1]
+        + Math.hypot(currentPoint.x - previous.x, currentPoint.y - previous.y));
+    }
+    const totalLength = cumulativeLengths[cumulativeLengths.length - 1];
+    if (totalLength < 12) {
+      fadeButterflyRoutePath();
+      return;
+    }
+
+    cancelButterflyRoute();
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    mainButterflyAnchor = null;
+    butterflyState = "route";
+    blossomButterfly.classList.remove("blossom-landed", "blossom-held");
+    blossomButterfly.classList.add("blossom-flying");
+    blossomButterfly.style.transition = "none";
+    updateButterflyRoutePath(points);
+    const startTime = performance.now();
+    const duration = clamp(totalLength * 5.2, 1800, 20000);
+    fadeButterflyRoutePath();
+    let nextFlowerDistance = 0;
+    let droppedFlowerCount = 0;
+
+    function advanceRoute(now) {
+      if (butterflyState !== "route") return;
+      const progress = clamp((now - startTime) / duration, 0, 1);
+      const distance = totalLength * progress;
+      let segment = 1;
+      while (segment < cumulativeLengths.length - 1 && cumulativeLengths[segment] < distance) segment++;
+      const segmentLength = cumulativeLengths[segment] - cumulativeLengths[segment - 1];
+      const segmentProgress = segmentLength
+        ? clamp((distance - cumulativeLengths[segment - 1]) / segmentLength, 0, 1)
+        : 1;
+      const from = points[segment - 1];
+      const to = points[segment];
+      const x = from.x + (to.x - from.x) * segmentProgress;
+      const y = from.y + (to.y - from.y) * segmentProgress;
+      positionButterflyAt(x, y);
+      const heading = Math.atan2(to.y - from.y, to.x - from.x);
+      blossomButterfly.style.transform = "rotate(" + (heading * 180 / Math.PI).toFixed(1) + "deg)";
+      if (distance >= nextFlowerDistance && droppedFlowerCount < 100) {
+        dropButterflyRouteFlower(x - Math.cos(heading) * 16, y - Math.sin(heading) * 16);
+        droppedFlowerCount++;
+        nextFlowerDistance += 55;
+        while (nextFlowerDistance <= distance) nextFlowerDistance += 55;
+      }
+      if (progress < 1) {
+        butterflyRouteFrame = window.requestAnimationFrame(advanceRoute);
+        return;
+      }
+
+      butterflyRouteFrame = 0;
+      butterflyState = "landed";
+      blossomButterfly.classList.remove("blossom-flying");
+      blossomButterfly.classList.add("blossom-landed");
+      blossomButterfly.style.removeProperty("transition");
+      setButterflyAnchor(blossomButterfly, coverAnchorAtPoint(to));
+      blossomButterfly.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+      scheduleButterflyFlight(1600);
+      scheduleButterflyOrbit(false, 12000 + Math.random() * 12000);
+    }
+
+    butterflyRouteFrame = window.requestAnimationFrame(advanceRoute);
+  }
+
+  function beginButterflyRoute(event) {
+    if (event.button !== 0 || !document.body.classList.contains("butterflies-active")
+      || butterflyState === "hidden" || butterflyState === "held") return;
+    const target = event.target instanceof Element ? event.target : null;
+    if (target && target.closest("main,button,input,textarea,select,a,.track,.lyrics-panel,#resizeHandle,#floatingTracks,#blossomButterfly,#blossomButterflyCompanion")) return;
+    event.preventDefault();
+    event.stopPropagation();
+    cancelButterflyRoute();
+    butterflyRoutePointerId = event.pointerId;
+    butterflyRoutePoints = [{ x: event.clientX, y: event.clientY }];
+    updateButterflyRoutePath(butterflyRoutePoints);
+  }
+
+  document.addEventListener("pointerdown", beginButterflyRoute, true);
+  document.addEventListener("pointermove", event => {
+    if (event.pointerId !== butterflyRoutePointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const previous = butterflyRoutePoints[butterflyRoutePoints.length - 1];
+    if (Math.hypot(event.clientX - previous.x, event.clientY - previous.y) < 3) return;
+    const point = { x: event.clientX, y: event.clientY };
+    if (butterflyRoutePoints.length < 1600) butterflyRoutePoints.push(point);
+    else butterflyRoutePoints[butterflyRoutePoints.length - 1] = point;
+    updateButterflyRoutePath(butterflyRoutePoints);
+  }, true);
+  ["pointerup", "pointercancel"].forEach(name => document.addEventListener(name, event => {
+    if (event.pointerId !== butterflyRoutePointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    const route = butterflyRoutePoints.slice();
+    butterflyRoutePointerId = null;
+    butterflyRoutePoints = [];
+    if (name === "pointercancel" || route.length < 2) {
+      butterflyRoutePath.removeAttribute("d");
+      return;
+    }
+    flyButterflyAlongRoute(route);
+  }, true));
+
+  function hideButterfly() {
+    window.clearTimeout(butterflyFleeTimer);
+    butterflyFleeTimer = 0;
+    pendingButterflyFlee = null;
+    cancelButterflyRoute();
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    butterflyState = "hidden";
+    butterflyPointerId = null;
+    mainButterflyAnchor = null;
+    blossomButterfly.classList.remove("blossom-flying", "blossom-landed", "blossom-held", "blossom-orbiting");
+    blossomButterfly.style.transition = "none";
+    blossomButterfly.style.left = "-10vw";
+    blossomButterfly.style.top = "72vh";
+    blossomButterfly.style.transform = "";
+    blossomButterfly.classList.add("blossom-dismissed");
+    blossomButterfly.setAttribute("aria-hidden", "true");
+    blossomButterfly.tabIndex = -1;
+  }
+
+  function fleeButterflyFromPointer(x, y, movementX, movementY) {
+    window.clearTimeout(butterflyFleeTimer);
+    butterflyFleeTimer = 0;
+    pendingButterflyFlee = null;
+    if (!ambientMotionAllowed || !document.body.classList.contains("butterflies-active")
+      || (butterflyState !== "landed" && butterflyState !== "orbiting" && butterflyState !== "flying")
+      || performance.now() < butterflyFleeCooldownUntil) return false;
+
+    const center = butterflyCenter(blossomButterfly);
+    if (Math.hypot(center.x - x, center.y - y) > 180) return false;
+
+    const size = butterflySize(blossomButterfly);
+    const predictedX = x + movementX * 1.5;
+    const predictedY = y + movementY * 1.5;
+    let awayX = center.x - predictedX;
+    let awayY = center.y - predictedY;
+    let awayLength = Math.hypot(awayX, awayY);
+    if (awayLength < 1) {
+      awayX = movementX ? -movementX : 1;
+      awayY = movementY ? -movementY : 0;
+      awayLength = Math.hypot(awayX, awayY);
+    }
+    awayX /= awayLength;
+    awayY /= awayLength;
+
+    const travelDistance = 220 + Math.random() * 110;
+    const sideOffset = (Math.random() - 0.5) * 100;
+    const targetX = clamp(
+      center.x + awayX * travelDistance - awayY * sideOffset,
+      size.width / 2,
+      window.innerWidth - size.width / 2
+    );
+    const targetY = clamp(
+      center.y + awayY * travelDistance + awayX * sideOffset,
+      size.height / 2,
+      window.innerHeight - size.height / 2
+    );
+    const landing = coverAnchorAtPoint({ x: targetX, y: targetY }) || {
+      left: targetX - size.width / 2,
+      top: targetY - size.height / 2,
+      onSong: false
+    };
+    const duration = clamp(travelDistance * 3.2, 1000, 1700);
+    const heading = Math.atan2(targetY - center.y, targetX - center.x) * 180 / Math.PI;
+
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    butterflyPointerId = null;
+    mainButterflyAnchor = null;
+    butterflyState = "flying";
+    butterflyFleeCooldownUntil = performance.now() + 1700;
+    blossomButterfly.classList.remove("blossom-landed", "blossom-held", "blossom-orbiting", "blossom-dismissed");
+    blossomButterfly.classList.add("blossom-flying");
+    blossomButterfly.style.setProperty("--butterfly-flight-time", duration + "ms");
+    blossomButterfly.style.transform = "rotate(" + heading.toFixed(1) + "deg)";
+    blossomButterfly.setAttribute("aria-hidden", "false");
+    blossomButterfly.tabIndex = 0;
+    blossomButterfly.setAttribute("aria-label", "Butterfly flying away from the mouse");
+    requestAnimationFrame(() => {
+      if (butterflyState !== "flying") return;
+      blossomButterfly.style.left = landing.left + "px";
+      blossomButterfly.style.top = landing.top + "px";
+    });
+    butterflyLandingTimer = window.setTimeout(() => {
+      if (butterflyState !== "flying") return;
+      butterflyState = "landed";
+      blossomButterfly.classList.remove("blossom-flying");
+      blossomButterfly.classList.add("blossom-landed");
+      blossomButterfly.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+      setButterflyAnchor(blossomButterfly, landing);
+      scheduleButterflyFlight(1800 + Math.random() * 2600);
+      scheduleButterflyOrbit(false, 12000 + Math.random() * 12000);
+    }, duration + 80);
+    return true;
+  }
+
+  function holdButterflyAt(x, y) {
+    cancelButterflyRoute();
+    stopButterflyOrbit(blossomButterfly);
+    window.clearTimeout(butterflyOrbitTimer);
+    butterflyOrbitTimer = 0;
+    clearButterflyTimers();
+    mainButterflyAnchor = null;
+    butterflyState = "held";
+    blossomButterfly.classList.remove("blossom-flying", "blossom-landed");
+    blossomButterfly.classList.add("blossom-held");
+    positionButterflyAt(x, y);
+    blossomButterfly.style.transform = "rotate(-4deg)";
+    blossomButterfly.setAttribute("aria-label", "Butterfly picked up; release it to let it land");
+  }
+
+  function releaseButterfly() {
+    butterflyState = "landed";
+    butterflyPointerId = null;
+    butterflyPointerStart = null;
+    butterflyHeldByKeyboard = false;
+    blossomButterfly.classList.remove("blossom-held", "blossom-flying");
+    blossomButterfly.classList.add("blossom-landed");
+    blossomButterfly.style.removeProperty("transition");
+    blossomButterfly.setAttribute("aria-label", "Butterfly resting; pick it up to move it");
+    scheduleButterflyFlight(2500 + Math.random() * 3500);
+    scheduleButterflyOrbit(false, 12000 + Math.random() * 12000);
+  }
+
+  blossomButterfly.addEventListener("pointerdown", event => {
+    if (!document.body.classList.contains("butterflies-active") || event.button !== 0) return;
+    window.clearTimeout(butterflyFleeTimer);
+    butterflyFleeTimer = 0;
+    pendingButterflyFlee = null;
+    event.preventDefault();
+    event.stopPropagation();
+    butterflyPointerId = event.pointerId;
+    butterflyPointerStart = { x: event.clientX, y: event.clientY };
+    butterflyPointerMoved = false;
+    holdButterflyAt(event.clientX, event.clientY);
+    blossomButterfly.setPointerCapture(event.pointerId);
+  });
+  blossomButterfly.addEventListener("pointermove", event => {
+    if (butterflyState !== "held" || event.pointerId !== butterflyPointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (butterflyPointerStart
+      && Math.hypot(event.clientX - butterflyPointerStart.x, event.clientY - butterflyPointerStart.y) > 6) {
+      butterflyPointerMoved = true;
+    }
+    positionButterflyAt(event.clientX, event.clientY);
+  });
+  ["pointerup", "pointercancel"].forEach(name => blossomButterfly.addEventListener(name, event => {
+    if (event.pointerId !== butterflyPointerId) return;
+    event.preventDefault();
+    event.stopPropagation();
+    releaseButterfly();
+  }));
+  blossomButterfly.addEventListener("click", event => {
+    if (!document.body.classList.contains("butterflies-active")) return;
+    event.preventDefault();
+    if (event.detail === 0) return;
+    if (butterflyPointerMoved) {
+      butterflyPointerMoved = false;
+      return;
+    }
+    window.clearTimeout(butterflyClickTimer);
+    butterflyClickTimer = window.setTimeout(() => {
+      butterflyClickTimer = 0;
+      hideButterfly();
+    }, 600);
+  });
+  blossomButterfly.addEventListener("dblclick", event => {
+    if (!document.body.classList.contains("butterflies-active")
+      || event.detail !== 2 || event.button !== 0
+      || event.target.closest("#blossomButterfly") !== blossomButterfly) return;
+    event.preventDefault();
+    window.clearTimeout(butterflyClickTimer);
+    butterflyClickTimer = 0;
+    window.clearTimeout(butterflyFleeTimer);
+    butterflyFleeTimer = 0;
+    pendingButterflyFlee = null;
+    fleeButterflyFromPointer(event.clientX, event.clientY, 0, 0);
+  });
+  document.addEventListener("pointermove", event => {
+    if (event.pointerType !== "mouse") return;
+    const previous = lastButterflyMousePosition;
+    lastButterflyMousePosition = { x: event.clientX, y: event.clientY };
+    if (!previous) return;
+    const movementX = event.clientX - previous.x;
+    const movementY = event.clientY - previous.y;
+    if (Math.hypot(movementX, movementY) < 3) return;
+    if (!ambientMotionAllowed || !document.body.classList.contains("butterflies-active")
+      || (butterflyState !== "landed" && butterflyState !== "orbiting" && butterflyState !== "flying")
+      || performance.now() < butterflyFleeCooldownUntil) return;
+    const center = butterflyCenter(blossomButterfly);
+    if (Math.hypot(center.x - event.clientX, center.y - event.clientY) > 180) {
+      window.clearTimeout(butterflyFleeTimer);
+      butterflyFleeTimer = 0;
+      pendingButterflyFlee = null;
+      return;
+    }
+    pendingButterflyFlee = {
+      x: event.clientX,
+      y: event.clientY,
+      movementX,
+      movementY
+    };
+    if (!butterflyFleeTimer) {
+      butterflyFleeTimer = window.setTimeout(() => {
+        butterflyFleeTimer = 0;
+        const pointer = pendingButterflyFlee;
+        pendingButterflyFlee = null;
+        if (pointer) fleeButterflyFromPointer(pointer.x, pointer.y, pointer.movementX, pointer.movementY);
+      }, 180);
+    }
+  });
+  blossomButterfly.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      if (event.repeat) return;
+      if (butterflyHeldByKeyboard) {
+        releaseButterfly();
+      } else {
+        const rect = blossomButterfly.getBoundingClientRect();
+        butterflyHeldByKeyboard = true;
+        holdButterflyAt(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      }
+      return;
+    }
+    if (!butterflyHeldByKeyboard || !event.key.startsWith("Arrow")) return;
+    event.preventDefault();
+    const rect = blossomButterfly.getBoundingClientRect();
+    const step = event.shiftKey ? 24 : 10;
+    const dx = event.key === "ArrowLeft" ? -step : event.key === "ArrowRight" ? step : 0;
+    const dy = event.key === "ArrowUp" ? -step : event.key === "ArrowDown" ? step : 0;
+    blossomButterfly.style.left = clamp(rect.left + dx, 0, window.innerWidth - rect.width) + "px";
+    blossomButterfly.style.top = clamp(rect.top + dy, 0, window.innerHeight - rect.height) + "px";
+  });
+
   function getShapeAt(x, y) {
     for (let i = ambientShapes.length - 1; i >= 0; i--) {
       const shape = ambientShapes[i];
@@ -1338,6 +2623,7 @@
   }
 
   document.addEventListener("pointerdown", event => {
+    if (event.target.closest && event.target.closest("#blossomButterfly")) return;
     if (!ambientMode || event.button !== 0 || draggedShape) return;
     const shape = getShapeAt(event.clientX, event.clientY);
     if (!shape) return;
@@ -1354,6 +2640,7 @@
   }, true);
 
   document.addEventListener("pointermove", event => {
+    if (event.target.closest && event.target.closest("#blossomButterfly")) return;
     if (!draggedShape) {
       document.body.classList.toggle(
         "hovering-ambient",
@@ -1424,7 +2711,46 @@
     context.translate(shape.x, shape.y);
     context.rotate(shape.rotation);
 
-    if (shape.shape === "leaf") {
+    if (shape.shape === "blossom-flower") {
+      for (let index = 0; index < 6; index++) {
+        const angle = index * Math.PI / 3;
+        const distance = s * 0.38;
+        context.beginPath();
+        context.ellipse(
+          Math.cos(angle) * distance,
+          Math.sin(angle) * distance,
+          s * 0.24,
+          s * 0.36,
+          angle,
+          0,
+          Math.PI * 2
+        );
+        context.fillStyle = `rgba(255,253,239,${0.92 * fade})`;
+        context.fill();
+        context.strokeStyle = `rgba(184,146,61,${0.32 * fade})`;
+        context.lineWidth = 0.6;
+        context.stroke();
+      }
+      context.beginPath();
+      context.arc(0, 0, s * 0.15, 0, Math.PI * 2);
+      context.fillStyle = `rgba(235,190,67,${0.95 * fade})`;
+      context.fill();
+      context.restore();
+      return;
+    } else if (shape.shape === "blossom-petal") {
+      context.beginPath();
+      context.moveTo(0, -s);
+      context.quadraticCurveTo(s * 0.88, -s * 0.16, 0, s);
+      context.quadraticCurveTo(-s * 0.82, -s * 0.18, 0, -s);
+      context.closePath();
+      context.fillStyle = `rgba(255,253,239,${0.94 * fade})`;
+      context.fill();
+      context.strokeStyle = `rgba(194,157,73,${0.5 * fade})`;
+      context.lineWidth = 0.7;
+      context.stroke();
+      context.restore();
+      return;
+    } else if (shape.shape === "leaf") {
       context.beginPath();
       context.moveTo(-s, 0);
       context.quadraticCurveTo(-s * 0.1, -s * 0.95, s, 0);
@@ -1498,6 +2824,18 @@
       spawnLeaf();
       leafLastSpawn = timestamp;
     }
+    if (ambientMode === "blossoms" && ambientMotionAllowed
+      && ambientShapes.filter(shape => shape.shape === "blossom-petal").length < 12
+      && timestamp - blossomLastSpawn > 420 + Math.random() * 620) {
+      spawnBlossomPetal();
+      blossomLastSpawn = timestamp;
+    }
+    if (ambientMode === "blossoms" && ambientMotionAllowed
+      && ambientShapes.filter(shape => shape.shape === "blossom-flower").length < 5
+      && timestamp - blossomFlowerLastSpawn > 1200 + Math.random() * 1300) {
+      spawnBlossomFlower();
+      blossomFlowerLastSpawn = timestamp;
+    }
     ambientShapes = ambientShapes.filter(shape => {
       const isDragged = draggedShape && draggedShape.shape === shape;
       if (!isDragged) {
@@ -1505,6 +2843,16 @@
         if (shape.shape === "leaf") {
           shape.x += shape.speedX;
           shape.y += shape.speedY + Math.sin(shape.age * 0.035 + shape.wave) * 0.2;
+          shape.rotation += shape.spin;
+          shape.life = 1 - shape.age / shape.duration;
+        } else if (shape.shape === "blossom-petal") {
+          shape.x += shape.drift + Math.sin(shape.age * 0.025 + shape.wave) * 0.3;
+          shape.y += shape.speedY;
+          shape.rotation += shape.spin;
+          shape.life = 1 - shape.age / shape.duration;
+        } else if (shape.shape === "blossom-flower") {
+          shape.x += shape.drift + Math.sin(shape.age * 0.015 + shape.wave) * 0.12;
+          shape.y -= 0.08;
           shape.rotation += shape.spin;
           shape.life = 1 - shape.age / shape.duration;
         } else {
@@ -1519,7 +2867,11 @@
       return isDragged || (shape.shape === "leaf"
         ? shape.x > -shape.size * 2 && shape.x < window.innerWidth + shape.size * 2
           && shape.y < window.innerHeight + shape.size * 2
-        : shape.y > -shape.size * 2);
+        : shape.shape === "blossom-petal"
+          ? shape.y < window.innerHeight + shape.size * 2
+          : shape.shape === "blossom-flower"
+            ? shape.y > -shape.size * 2 && shape.y < window.innerHeight + shape.size * 2
+          : shape.y > -shape.size * 2);
     });
     requestAnimationFrame(drawAmbientEffects);
   }
@@ -2139,7 +3491,8 @@
     event.stopPropagation();
     resizeStart = {
       x: event.clientX,
-      width: uiWidth
+      width: uiWidth,
+      butterfliesSentAway: false
     };
     isInteracting = true;
     resizeHandle.setPointerCapture(event.pointerId);
@@ -2153,6 +3506,10 @@
       180,
       maxWidth
     );
+    if (!resizeStart.butterfliesSentAway && uiWidth !== resizeStart.width) {
+      resizeStart.butterfliesSentAway = true;
+      sendButterfliesAwayFromUi();
+    }
     playerUi.style.setProperty("--ui-width", uiWidth + "px");
     updateCompactMode(uiWidth);
   });
@@ -2172,6 +3529,7 @@
   resizeHandle.addEventListener("pointerup", stopResizing);
   resizeHandle.addEventListener("pointercancel", stopResizing);
   window.addEventListener("resize", () => {
+    sendButterfliesAwayFromUi();
     uiWidth = Math.min(uiWidth, window.innerWidth - 48);
     if (uiWidth < 180) uiWidth = 180;
     playerUi.style.setProperty("--ui-width", uiWidth + "px");
@@ -2205,8 +3563,10 @@
     ).join("");
   }
   function resetBackground() {
+    stopButterflyFlight();
     document.body.classList.remove("cover-dots");
     document.body.classList.remove("watercolor-paper");
+    document.body.classList.remove("blossom-paper");
     trackline.hidden = true;
     ambientShapes = [];
     draggedShape = null;
@@ -2436,6 +3796,7 @@
     artist.textContent = song.artist || "Unknown artist";
     document.body.classList.toggle("gold-night-sky", song.skyEffect === "gold-night");
     document.body.classList.toggle("cover-dots", Boolean(song.dots));
+    document.body.classList.toggle("blossom-paper", song.ambientEffect === "blossoms");
     ambientShapes = [];
     draggedShape = null;
     document.body.classList.remove("dragging-shape", "hovering-ambient");
@@ -2459,6 +3820,10 @@
     leafPalette = song.leafPalette || ["#a9c969", "#dba750", "#bb6d49"];
     if (heartEnabled) heartLastSpawn = performance.now() - 2000;
     if (ambientMode === "leaves") leafLastSpawn = performance.now() - 1200;
+    if (ambientMode === "blossoms") {
+      blossomLastSpawn = performance.now() - 900;
+      blossomFlowerLastSpawn = performance.now() - 1500;
+    }
     setRain(song.rain);
     if (song.backgroundGradient) {
       setThemeGradient(song.backgroundGradient[0], song.backgroundGradient[1]);
@@ -3817,6 +5182,7 @@ function autoplayCurrentTrack() {
       ? sourceSlot
       : tracksEl.querySelector('.track-cover-slot[data-index="' + index + '"]');
     if (!liveSlot) return;
+    releaseButterfliesFromCover(liveSlot);
     const rect = liveSlot.getBoundingClientRect();
     const cover = document.createElement("div");
     cover.className = "floating-playlist-cover popping";
@@ -4065,6 +5431,7 @@ function autoplayCurrentTrack() {
     title.textContent = song.title;
     artist.textContent = song.artist || "Unknown artist";
     showArtwork();
+    if (song.ambientEffect === "blossoms") applySongTheme(song);
     loadLyricsForSong(song);
     renderList();
   }
@@ -4279,16 +5646,27 @@ function autoplayCurrentTrack() {
     lyricViews.forEach(view => view.panel.classList.add("is-playing"));
     const vinyl = art.querySelector(".vinyl-disc");
     if (vinyl) vinyl.setAttribute("aria-label", "Record playing on the turntable");
+    if (playlist[current] && playlist[current].ambientEffect === "blossoms") startButterflyFlight();
+    else stopButterflyFlight();
   });
-  audio.addEventListener("pause", () => {
+  function showPlaybackStopped() {
     toggle.textContent = "▶";
     art.classList.remove("is-playing");
     lyricViews.forEach(view => view.panel.classList.remove("is-playing"));
+    const vinyl = art.querySelector(".vinyl-disc");
+    if (vinyl) vinyl.setAttribute("aria-label", "Record on turntable; use the play control to play");
+  }
+  audio.addEventListener("pause", () => {
+    if (!audio.paused) return;
+    showPlaybackStopped();
+    stopButterflyFlight();
   });
   audio.addEventListener("error", () => {
     if (audio.error) showPlaybackError(audio.error);
   });
   audio.addEventListener("ended", () => {
+    showPlaybackStopped();
+    stopButterflyFlight();
     if (autoNextEnabled) {
       load(current+1);
       autoplayCurrentTrack();
